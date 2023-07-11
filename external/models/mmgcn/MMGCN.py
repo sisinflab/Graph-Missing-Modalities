@@ -13,6 +13,7 @@ from tqdm import tqdm
 import numpy as np
 import torch
 import os
+import math
 
 from elliot.utils.write import store_recommendation
 from elliot.dataset.samplers import custom_sampler_full as csf
@@ -145,6 +146,10 @@ class MMGCN(RecMixin, BaseRecommenderModel):
                 for batch in self._sampler.step(edge_index, self._data.transactions, self._batch_size):
                     steps += 1
                     loss += self._model.train_step(batch)
+
+                    if math.isnan(loss) or math.isinf(loss) or (not loss):
+                        break
+
                     t.set_postfix({'loss': f'{loss / steps:.5f}'})
                     t.update()
 

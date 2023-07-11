@@ -12,6 +12,7 @@ from ast import literal_eval as make_tuple
 from tqdm import tqdm
 import torch
 import os
+import math
 import numpy as np
 
 from elliot.utils.write import store_recommendation
@@ -137,6 +138,10 @@ class LATTICE(RecMixin, BaseRecommenderModel):
                 for batch in self._sampler.step(self._data.transactions, self._batch_size):
                     steps += 1
                     loss += self._model.train_step(batch, build_item_graph)
+
+                    if math.isnan(loss) or math.isinf(loss) or (not loss):
+                        break
+
                     t.set_postfix({'loss': f'{loss / steps:.5f}'})
                     t.update()
                     build_item_graph = False
