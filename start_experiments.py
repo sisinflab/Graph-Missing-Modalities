@@ -8,7 +8,7 @@ parser.add_argument('--gpu', type=str, default='0')
 args = parser.parse_args()
 
 strategies = ['zeros', 'mean', 'random', 'feat_prop']
-perc = [10, 20, 30, 40, 50, 60, 70, 80, 90]
+perc = [10, 50, 90]
 rounds = [5]
 
 visual = list(itertools.product(strategies, perc, rounds))
