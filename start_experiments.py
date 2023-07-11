@@ -15,6 +15,7 @@ visual = list(itertools.product(strategies, perc, rounds))
 textual = list(itertools.product(strategies, perc, rounds))
 final = list(itertools.product(visual, textual))
 
+
 config = """experiment:
   backend: pytorch
   path_output_rec_result: ./results/{0}/folder/recs/
