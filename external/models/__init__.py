@@ -15,7 +15,6 @@ for _backend in sys.modules["external"].backend:
     elif _backend == "pytorch":
         from .grcn.GRCN import GRCN
         from .lattice.LATTICE import LATTICE
-        from .mgat.MGAT import MGAT
         from .mmgcn.MMGCN import MMGCN
         from .vbpr.VBPR import VBPR
         from .bprmf.BPRMF import BPRMF

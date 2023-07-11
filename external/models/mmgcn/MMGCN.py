@@ -117,7 +117,7 @@ class MMGCN(RecMixin, BaseRecommenderModel):
             aggregation=self._aggregation,
             concatenation=self._concat,
             has_id=self._has_id,
-            multimodal_features=[self.__getattribute__(f'''_side_{m}''').object.get_all_features() for m in
+            multimodal_features=[self.__getattribute__(f'''_side_{m}''').object.get_all_features(data.sp_i_train.transpose().dot(data.sp_i_train)) for m in
                                  self._modalities],
             adj=self.adj,
             random_seed=self._seed

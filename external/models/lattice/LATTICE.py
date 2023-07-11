@@ -112,7 +112,7 @@ class LATTICE(RecMixin, BaseRecommenderModel):
             modalities=self._modalities,
             l_m=self._lambda,
             top_k=self._top_k,
-            multimodal_features=[self.__getattribute__(f'''_side_{m}''').object.get_all_features() for m in
+            multimodal_features=[self.__getattribute__(f'''_side_{m}''').object.get_all_features(data.sp_i_train.transpose().dot(data.sp_i_train)) for m in
                                  self._modalities],
             adj=self.adj,
             random_seed=self._seed

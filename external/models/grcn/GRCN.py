@@ -142,7 +142,7 @@ class GRCN(RecMixin, BaseRecommenderModel):
             pruning=self._pruning,
             has_act=self._has_act,
             fusion_mode=self._fusion_mode,
-            multimodal_features=[self.__getattribute__(f'''_side_{m}''').object.get_all_features() for m in
+            multimodal_features=[self.__getattribute__(f'''_side_{m}''').object.get_all_features(data.sp_i_train.transpose().dot(data.sp_i_train)) for m in
                                  self._modalities],
             adj=self.adj,
             adj_user=self.adj_user,
