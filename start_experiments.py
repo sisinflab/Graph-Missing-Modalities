@@ -131,7 +131,7 @@ config = """experiment:
       seed: 123
 """
 
-for c in final:
+for idx, c in enumerate(final):
     visual_strategy = c[0][0]
     visual_perc = c[0][1]
     visual_round = c[0][2]
@@ -153,8 +153,8 @@ for c in final:
         ).replace(
             'textual_sampled_perc_round', f'sampled_{textual_perc}_{textual_round}'
         ).replace('gpu_id', args.gpu).replace('dataset_name', args.data))
-    print(f'*********START: {folder}*********')
+    print(f'*********START: {idx + 1}*********')
     run_experiment(f'config_files/visual-strategy={visual_strategy}_visual-perc={visual_perc}_'
                    f'visual-round={visual_round}_textual-strategy={textual_strategy}_'
                    f'textual-perc={textual_perc}_textual-round={textual_round}.yml')
-    print(f'*********END: {folder}*********')
+    print(f'*********END: {idx + 1}*********')
