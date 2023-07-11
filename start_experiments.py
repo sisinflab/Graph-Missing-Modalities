@@ -1,6 +1,7 @@
 from elliot.run import run_experiment
 import argparse
 import itertools
+import random
 
 parser = argparse.ArgumentParser(description="Run training and evaluation.")
 parser.add_argument('--data', type=str, default='office')
@@ -8,12 +9,12 @@ parser.add_argument('--gpu', type=str, default='0')
 args = parser.parse_args()
 
 strategies = ['zeros', 'mean', 'random', 'feat_prop']
-perc = [10, 50, 90]
-rounds = [5]
+perc = [10, 20, 30, 40, 50, 60, 70, 80, 90]
+rounds = [1, 2, 3, 4, 5]
 
-visual = list(itertools.product(strategies, perc, rounds))
-textual = list(itertools.product(strategies, perc, rounds))
-final = list(itertools.product(visual, textual))
+visual = list(itertools.product(strategies, perc))
+textual = list(itertools.product(strategies, perc))
+final = list(zip(visual, textual))
 
 config = """experiment:
   backend: pytorch
@@ -131,13 +132,15 @@ config = """experiment:
       seed: 123
 """
 
+random.seed(42)
+
 for idx, c in enumerate(final):
     visual_strategy = c[0][0]
     visual_perc = c[0][1]
-    visual_round = c[0][2]
+    visual_round = random.sample(rounds, 1)
     textual_strategy = c[1][0]
     textual_perc = c[1][1]
-    textual_round = c[1][2]
+    textual_round = random.sample(rounds, 1)
     folder = f'{visual_strategy}_{visual_perc}_{visual_round}_{textual_strategy}_{textual_perc}_{textual_round}'
     with open(f'config_files/visual-strategy={visual_strategy}_visual-perc={visual_perc}_'
               f'visual-round={visual_round}_textual-strategy={textual_strategy}_'
