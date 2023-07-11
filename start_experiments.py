@@ -137,10 +137,10 @@ random.seed(42)
 for idx, c in enumerate(final):
     visual_strategy = c[0][0]
     visual_perc = c[0][1]
-    visual_round = random.sample(rounds, 1)
+    visual_round = random.sample(rounds, 1)[0]
     textual_strategy = c[1][0]
     textual_perc = c[1][1]
-    textual_round = random.sample(rounds, 1)
+    textual_round = random.sample(rounds, 1)[0]
     folder = f'{visual_strategy}_{visual_perc}_{visual_round}_{textual_strategy}_{textual_perc}_{textual_round}'
     with open(f'config_files/visual-strategy={visual_strategy}_visual-perc={visual_perc}_'
               f'visual-round={visual_round}_textual-strategy={textual_strategy}_'
