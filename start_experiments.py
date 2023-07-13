@@ -142,7 +142,7 @@ for idx, c in enumerate(final):
     textual_perc = c[1][1]
     textual_round = random.sample(rounds, 1)[0]
     folder = f'{visual_strategy}_{visual_perc}_{visual_round}_{textual_strategy}_{textual_perc}_{textual_round}'
-    with open(f'config_files/visual-strategy={visual_strategy}_visual-perc={visual_perc}_'
+    with open(f'config_files/{args.data}_visual-strategy={visual_strategy}_visual-perc={visual_perc}_'
               f'visual-round={visual_round}_textual-strategy={textual_strategy}_'
               f'textual-perc={textual_perc}_textual-round={textual_round}.yml', 'w') as f:
         f.write(config.replace(
