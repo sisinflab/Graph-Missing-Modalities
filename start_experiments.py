@@ -275,7 +275,7 @@ for idx, c in enumerate(final):
             'textual_sampled_perc_round', f'sampled_{textual_perc}_{textual_round}'
         ).replace('gpu_id', args.gpu).replace('dataset_name', args.data))
     print(f'*********START: {idx + 1}*********')
-    run_experiment(f'config_files/visual-strategy={visual_strategy}_visual-perc={visual_perc}_'
+    run_experiment(f'config_files/{args.data}_visual-strategy={visual_strategy}_visual-perc={visual_perc}_'
                    f'visual-round={visual_round}_textual-strategy={textual_strategy}_'
                    f'textual-perc={textual_perc}_textual-round={textual_round}.yml')
     print(f'*********END: {idx + 1}*********')
