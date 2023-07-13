@@ -20,24 +20,24 @@ final = list(zip(visual, textual))
 if args.colab:
     config = """experiment:
       backend: pytorch
-      path_output_rec_result: ../Graph-Missing-Modalities/results/{0}/folder/recs/
-      path_output_rec_weight: ../Graph-Missing-Modalities/results/{0}/folder/weights/
-      path_output_rec_performance: ../Graph-Missing-Modalities/results/{0}/folder/performance/
+      path_output_rec_result: ../drive/MyDrive/Graph-Missing-Modalities/results/{0}/folder/recs/
+      path_output_rec_weight: ../drive/MyDrive/Graph-Missing-Modalities/results/{0}/folder/weights/
+      path_output_rec_performance: ../drive/MyDrive/Graph-Missing-Modalities/results/{0}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../../Graph-Missing-Modalities/data/{0}/train.txt
-        validation_path: ../../Graph-Missing-Modalities/data/{0}/val.txt
-        test_path: ../../Graph-Missing-Modalities/data/{0}/test.txt
+        train_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/train.txt
+        validation_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/val.txt
+        test_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/test.txt
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../../Graph-Missing-Modalities/data/{0}/image_feat
-            masked_items_path: ../../Graph-Missing-Modalities/data/{0}/visual_sampled_perc_round.txt
+            visual_features: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/image_feat
+            masked_items_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/visual_sampled_perc_round.txt
             strategy: strategy_name_visual
             feat_prop: co
             prop_layers: 3
           - dataloader: TextualAttribute
-            textual_features: ../../Graph-Missing-Modalities/data/{0}/text_feat
-            masked_items_path: ../../Graph-Missing-Modalities/data/{0}/textual_sampled_perc_round.txt
+            textual_features: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/text_feat
+            masked_items_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/textual_sampled_perc_round.txt
             strategy: strategy_name_textual
             feat_prop: co
             prop_layers: 3
