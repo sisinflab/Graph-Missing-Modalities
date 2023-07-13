@@ -25,19 +25,19 @@ if args.colab:
       path_output_rec_performance: ../drive/MyDrive/Graph-Missing-Modalities/results/{0}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/train.txt
-        validation_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/val.txt
-        test_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/test.txt
+        train_path: ../data/{0}/train.txt
+        validation_path: ../data/{0}/val.txt
+        test_path: ../data/{0}/test.txt
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/image_feat
-            masked_items_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/visual_sampled_perc_round.txt
+            visual_features: ../data/{0}/image_feat
+            masked_items_path: ../data/{0}/visual_sampled_perc_round.txt
             strategy: strategy_name_visual
             feat_prop: co
             prop_layers: 3
           - dataloader: TextualAttribute
-            textual_features: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/text_feat
-            masked_items_path: ../../drive/MyDrive/Graph-Missing-Modalities/data/{0}/textual_sampled_perc_round.txt
+            textual_features: ../data/{0}/text_feat
+            masked_items_path: ../data/{0}/textual_sampled_perc_round.txt
             strategy: strategy_name_textual
             feat_prop: co
             prop_layers: 3
