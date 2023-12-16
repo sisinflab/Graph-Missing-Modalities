@@ -3,15 +3,10 @@ Module description:
 
 """
 
-__version__ = '0.3.1'
-__author__ = 'Vito Walter Anelli, Claudio Pomo, Daniele Malitesta'
-__email__ = 'vitowalter.anelli@poliba.it, claudio.pomo@poliba.it, daniele.malitesta@poliba.it'
-
 import torch
 import os
 import numpy as np
 from tqdm import tqdm
-import math
 from ast import literal_eval as make_tuple
 
 from elliot.dataset.samplers import custom_sampler as cs
@@ -77,16 +72,19 @@ class VBPR(RecMixin, BaseRecommenderModel):
         if type(self._modalities) == list:
             if self._combine_modalities == 'concat':
                 all_multimodal_features = self.__getattribute__(
-                    f'''_side_{self._modalities[0]}''').object.get_all_features(data.sp_i_train.transpose().dot(data.sp_i_train))
+                    f'''_side_{self._modalities[0]}''').object.get_all_features(
+                    data.sp_i_train.transpose().dot(data.sp_i_train))
                 for m in self._modalities[1:]:
                     all_multimodal_features = np.concatenate((all_multimodal_features,
                                                               self.__getattribute__(
-                                                                  f'''_side_{m}''').object.get_all_features(data.sp_i_train.transpose().dot(data.sp_i_train))),
+                                                                  f'''_side_{m}''').object.get_all_features(
+                                                                  data.sp_i_train.transpose().dot(data.sp_i_train))),
                                                              axis=-1)
             else:
                 raise NotImplementedError('This combination of multimodal features has not been implemented yet!')
         else:
-            all_multimodal_features = self._side_visual.object.get_all_features(data.sp_i_train.transpose().dot(data.sp_i_train))
+            all_multimodal_features = self._side_visual.object.get_all_features(
+                data.sp_i_train.transpose().dot(data.sp_i_train))
 
         self._model = VBPRModel(self._num_users,
                                 self._num_items,
@@ -113,10 +111,6 @@ class VBPR(RecMixin, BaseRecommenderModel):
                 for batch in self._sampler.step(self._data.transactions, self._batch_size):
                     steps += 1
                     loss += self._model.train_step(batch)
-
-                    if math.isnan(loss) or math.isinf(loss) or (not loss):
-                        break
-
                     t.set_postfix({'loss': f'{loss / steps:.5f}'})
                     t.update()
 

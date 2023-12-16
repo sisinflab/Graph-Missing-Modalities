@@ -90,16 +90,24 @@ class TextualAttribute(AbstractLoader):
                     # get non masked items
                     non_masked_items = list(set(list(range(all_features.shape[0]))).difference(masked_items))
                     # binarize adjacency matrix
-                    item_item[item_item >= 1] = 1.0
+                    # item_item[item_item >= 1] = 1.0
                     # set zeros as initialization
                     all_features[masked_items] = np.zeros((1, all_features.shape[-1]))
                     # get sparse adjacency matrix
-                    row, col = item_item.nonzero()
-                    edge_index = np.array([row, col])
-                    edge_index = torch.tensor(edge_index, dtype=torch.int64)
-                    adj = SparseTensor(row=edge_index[0],
-                                       col=edge_index[1],
-                                       sparse_sizes=(all_features.shape[0], all_features.shape[0]))
+                    knn_val, knn_ind = torch.topk(torch.tensor(item_item), 20, dim=-1)
+                    items_cols = torch.flatten(knn_ind)
+                    ir = torch.tensor(list(range(item_item.shape[0])), dtype=torch.int64)
+                    items_rows = torch.repeat_interleave(ir, 20)
+                    # row, col = item_item.nonzero()
+                    # edge_index = np.array([row, col])
+                    # edge_index = torch.tensor(edge_index, dtype=torch.int64)
+                    # adj = SparseTensor(row=edge_index[0],
+                    #                    col=edge_index[1],
+                    #                    sparse_sizes=(self.n_items, self.n_items))
+                    adj = SparseTensor(row=items_rows,
+                                       col=items_cols,
+                                       value=torch.tensor([1.0] * items_rows.shape[0]),
+                                       sparse_sizes=(item_item.shape[0], item_item.shape[0]))
                     # normalize adjacency matrix
                     adj = self.compute_normalized_laplacian(adj, 0.5)
                     # feature propagation

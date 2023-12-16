@@ -1,16 +1,14 @@
 import pandas as pd
 import random
 
-data = 'baby'
+data = 'tiktok'
 seed = 42
 num_repeats = 5
-
-train = pd.read_csv(f'./data/{data}/train.tsv', sep='\t', header=None)
-items = list(range(train[1].nunique()))
+num_items = 6710
 
 for n in range(num_repeats):
     random.seed(seed + n)
     for p in range(10, 100, 10):
-        sampled = random.sample(items, int((p / 100) * len(items)))
+        sampled = random.sample(list(range(num_items)), int((p / 100) * num_items))
         pd.DataFrame([pd.Series(sampled)]).transpose().sort_values(by=0).to_csv(
             f'./data/{data}/sampled_{p}_{n + 1}.txt', sep='\t', header=None, index=None)

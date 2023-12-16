@@ -13,8 +13,4 @@ for _backend in sys.modules["external"].backend:
     if _backend == "tensorflow":
         pass
     elif _backend == "pytorch":
-        from .grcn.GRCN import GRCN
-        from .lattice.LATTICE import LATTICE
-        from .mmgcn.MMGCN import MMGCN
         from .vbpr.VBPR import VBPR
-        from .bprmf.BPRMF import BPRMF
