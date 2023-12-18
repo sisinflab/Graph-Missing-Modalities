@@ -6,10 +6,10 @@ import random
 parser = argparse.ArgumentParser(description="Run training and evaluation.")
 parser.add_argument('--data', type=str, default='baby')
 parser.add_argument('--gpu', type=str, default='0')
-parser.add_argument('--layers', type=str, default='1')
+parser.add_argument('--layers', type=str, default='2')
 args = parser.parse_args()
 
-strategies = ['zeros', 'mean', 'random', 'feat_prop']
+strategies = ['feat_prop']
 perc = [10, 20, 30, 40, 50, 60, 70, 80, 90]
 rounds = [1, 2, 3, 4, 5]
 
