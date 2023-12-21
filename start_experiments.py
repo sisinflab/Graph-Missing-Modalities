@@ -6,10 +6,10 @@ import random
 parser = argparse.ArgumentParser(description="Run training and evaluation.")
 parser.add_argument('--data', type=str, default='baby')
 parser.add_argument('--gpu', type=str, default='0')
-parser.add_argument('--layers', type=str, default='3')
+parser.add_argument('--layers', type=str, default='1')
 args = parser.parse_args()
 
-strategies = ['feat_prop']
+strategies = ['zeros', 'mean', 'random', 'feat_prop']
 perc = [10, 20, 30, 40, 50, 60, 70, 80, 90]
 rounds = [1, 2, 3, 4, 5]
 
@@ -48,7 +48,7 @@ config = """experiment:
   gpu: gpu_id
   external_models_path: ../external/models/__init__.py
   models:
-    external.VBPR:
+    external.FREEDOM:
       meta:
         hyper_opt_alg: grid
         verbose: True
@@ -57,14 +57,20 @@ config = """experiment:
         validation_rate: 10
         validation_metric: Recall@20
         restore: False
-      lr: 0.005
-      modalities: ('visual', 'textual')
-      epochs: 200
+      lr: 0.001
       factors: 64
+      epochs: 200
+      l_w: 1e-5
+      n_layers: 1
+      n_ui_layers: 2
+      top_k: 10
+      factors_multimod: 64
+      modalities: ('visual', 'textual')
+      loaders: ('VisualAttribute','TextualAttribute')
+      mw: (0.1,0.9)
+      drop: 0.8
+      lr_sched: (1.0,50)
       batch_size: 1024
-      l_w: 1e-2
-      comb_mod: concat
-      seed: 123
       early_stopping:
         patience: 5
         mode: auto
