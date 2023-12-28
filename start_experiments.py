@@ -175,7 +175,7 @@ else:
         validation_rate: 10
         validation_metric: Recall@20
         restore: False
-            batch_size: 1024
+      batch_size: 1024
       factors: 64
       lr: 0.001
       l_w: 1e-5
