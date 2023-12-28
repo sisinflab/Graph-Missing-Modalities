@@ -1,7 +1,7 @@
 import pandas as pd
 import random
 
-data = 'baby'
+data = 'allrecipes'
 seed = 42
 num_repeats = 5
 

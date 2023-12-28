@@ -14,4 +14,5 @@ for _backend in sys.modules["external"].backend:
         pass
     elif _backend == "pytorch":
         from .vbpr.VBPR import VBPR
+        from .lattice.LATTICE import LATTICE
         from .freedom.FREEDOM import FREEDOM

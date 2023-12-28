@@ -79,7 +79,7 @@ if args.model == 'freedom':
         monitor: Recall@20
         verbose: True
 """
-else:
+elif args.model == 'vbpr':
     config = """experiment:
   backend: pytorch
   path_output_rec_result: ./results/{0}/folder/recs/
@@ -127,6 +127,64 @@ else:
       batch_size: 1024
       l_w: 1e-2
       comb_mod: concat
+      seed: 123
+      early_stopping:
+        patience: 5
+        mode: auto
+        monitor: Recall@20
+        verbose: True
+    """
+else:
+    config = """experiment:
+  backend: pytorch
+  path_output_rec_result: ./results/{0}/folder/recs/
+  path_output_rec_weight: ./results/{0}/folder/weights/
+  path_output_rec_performance: ./results/{0}/folder/performance/
+  data_config:
+    strategy: fixed
+    train_path: ../data/{0}/train.tsv
+    validation_path: ../data/{0}/val.tsv
+    test_path: ../data/{0}/test.tsv
+    side_information:
+      - dataloader: VisualAttribute
+        visual_features: ../data/{0}/image_feat
+        masked_items_path: ../data/{0}/visual_sampled_perc_round.txt
+        strategy: strategy_name_visual
+        feat_prop: co
+        prop_layers: propagation_layers
+      - dataloader: TextualAttribute
+        textual_features: ../data/{0}/text_feat
+        masked_items_path: ../data/{0}/textual_sampled_perc_round.txt
+        strategy: strategy_name_textual
+        feat_prop: co
+        prop_layers: propagation_layers
+  dataset: dataset_name
+  top_k: 50
+  evaluation:
+    cutoffs: [10, 20, 50]
+    simple_metrics: [Recall, nDCG, Precision]
+  gpu: gpu_id
+  external_models_path: ../external/models/__init__.py
+  models:
+    external.LATTICE:
+      meta:
+        hyper_opt_alg: grid
+        verbose: True
+        save_weights: False
+        save_recs: False
+        validation_rate: 10
+        validation_metric: Recall@20
+        restore: False
+            batch_size: 1024
+      factors: 64
+      lr: 0.001
+      l_w: 1e-5
+      n_layers: 1
+      n_ui_layers: 2
+      top_k: 20
+      l_m: 0.7
+      factors_multimod: 64
+      modalities: ('visual', 'textual')
       seed: 123
       early_stopping:
         patience: 5
