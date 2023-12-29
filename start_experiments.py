@@ -10,7 +10,7 @@ parser.add_argument('--model', type=str, default='freedom')
 parser.add_argument('--layers', type=str, default='1')
 args = parser.parse_args()
 
-strategies = ['zeros', 'mean', 'random', 'feat_prop']
+strategies = ['mean', 'random', 'feat_prop']
 perc = [10, 20, 30, 40, 50, 60, 70, 80, 90]
 rounds = [1, 2, 3, 4, 5]
 
