@@ -1,11 +1,14 @@
 import pandas as pd
 import random
 
-data = 'allrecipes'
+data = 'office'
 seed = 42
 num_repeats = 5
 
-train = pd.read_csv(f'./data/{data}/train.tsv', sep='\t', header=None)
+try:
+    train = pd.read_csv(f'./data/{data}/train.tsv', sep='\t', header=None)
+except FileNotFoundError:
+    train = pd.read_csv(f'./data/{data}/train.txt', sep='\t', header=None)
 items = list(range(train[1].nunique()))
 
 for n in range(num_repeats):

@@ -166,7 +166,7 @@ else:
   gpu: gpu_id
   external_models_path: ../external/models/__init__.py
   models:
-    external.LATTICE:
+    external.BM3:
       meta:
         hyper_opt_alg: grid
         verbose: True
@@ -175,17 +175,17 @@ else:
         validation_rate: 10
         validation_metric: Recall@20
         restore: False
-      batch_size: 1024
+      lr: 0.005
+      multimod_factors: 64
+      reg_weight: 0.01
+      cl_weight: 2.0
+      dropout: 0.5
+      n_layers: 1
+      modalities: ('visual', 'textual')
       epochs: 200
       factors: 64
-      lr: 0.001
-      l_w: 1e-5
-      n_layers: 1
-      n_ui_layers: 2
-      top_k: 20
-      l_m: 0.7
-      factors_multimod: 64
-      modalities: ('visual', 'textual')
+      lr_sched: (1.0,50)
+      batch_size: 1024
       seed: 123
       early_stopping:
         patience: 5
