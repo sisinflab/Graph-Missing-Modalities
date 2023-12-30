@@ -13,6 +13,5 @@ for _backend in sys.modules["external"].backend:
     if _backend == "tensorflow":
         pass
     elif _backend == "pytorch":
-        from .vbpr.VBPR import VBPR
-        from .lattice.LATTICE import LATTICE
+        from .bm3.BM3 import BM3
         from .freedom.FREEDOM import FREEDOM
