@@ -73,7 +73,7 @@ class BM3(RecMixin, BaseRecommenderModel):
         all_multimodal_features = []
         for m_id, m in enumerate(self._modalities):
             all_multimodal_features.append(self.__getattribute__(
-                f'''_side_{self._modalities[m_id]}''').object.get_all_features())
+                f'''_side_{self._modalities[m_id]}''').object.get_all_features(data.sp_i_train.transpose().dot(data.sp_i_train)))
 
         self._model = BM3Model(
             num_users=self._num_users,
