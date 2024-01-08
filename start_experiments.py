@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(description="Run training and evaluation.")
 parser.add_argument('--data', type=str, default='baby')
 parser.add_argument('--gpu', type=str, default='0')
 parser.add_argument('--model', type=str, default='freedom')
-parser.add_argument('--layers', type=str, default='2')
+parser.add_argument('--layers', type=str, default='3')
 args = parser.parse_args()
 
 strategies = ['feat_prop']
