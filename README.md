@@ -67,7 +67,7 @@ The output files will be stored at the following paths:
 After this necessary pre-processing step, we can run the training/test of the recommendation models with all the baselines for missing modalities:
 ```sh
 # MMSSL (this covers all possible settings)
-PYTHONPATH=. ./MMSSL/run_all.sh {dataset} 
+cd ./MMSSL/ && ./run_all.sh {dataset} 
 ```
 ```sh
 # FREEDOM (this should be run for all propagation layers)
