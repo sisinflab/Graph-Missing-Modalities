@@ -24,10 +24,10 @@ do
       then
         for pr in ${prop_layers[@]};
         do
-          python3.8 main.py --dataset $1 --strategy $str --feat_prop co --prop_layers $pr --masked_items_image ./data/$1/$sam"_"$ran.txt --masked_items_text ./data/$1/$sam"_"$ran.txt
+          python3 main.py --dataset $1 --strategy $str --feat_prop co --prop_layers $pr --masked_items_image ./data/$1/$sam"_"$ran.txt --masked_items_text ./data/$1/$sam"_"$ran.txt
         done
       else
-        python3.8 main.py --dataset $1 --strategy $str --masked_items_image ./data/$1/$sam"_"$ran.txt --masked_items_text ./data/$1/$sam"_"$ran.txt
+        python3 main.py --dataset $1 --strategy $str --masked_items_image ./data/$1/$sam"_"$ran.txt --masked_items_text ./data/$1/$sam"_"$ran.txt
       fi
     done
   done
