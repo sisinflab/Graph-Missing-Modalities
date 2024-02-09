@@ -1,6 +1,6 @@
 --extra-index-url https://download.pytorch.org/whl/cu118
 Cython
-hyperopt
+hyperopt==0.2.5
 numpy
 torch
 tensorflow
@@ -10,4 +10,4 @@ pandas
 Pillow
 PyYAML
 scikit_learn
-gdown
+visdm

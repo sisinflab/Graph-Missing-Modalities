@@ -1,16 +1,15 @@
 from elliot.run import run_experiment
 import argparse
 import itertools
-import random
+import os
 
 parser = argparse.ArgumentParser(description="Run training and evaluation.")
 parser.add_argument('--data', type=str, default='baby')
 parser.add_argument('--gpu', type=str, default='0')
-parser.add_argument('--model', type=str, default='freedom')
-parser.add_argument('--layers', type=str, default='3')
+parser.add_argument('--layers', type=str, default='1')
 args = parser.parse_args()
 
-strategies = ['feat_prop']
+strategies = ['zeros', 'mean', 'random', 'feat_prop']
 perc = [10, 20, 30, 40, 50, 60, 70, 80, 90]
 rounds = [1, 2, 3, 4, 5]
 
@@ -18,8 +17,10 @@ visual = list(itertools.product(strategies, perc, rounds))
 textual = list(itertools.product(strategies, perc, rounds))
 final = list(zip(visual, textual))
 
-if args.model == 'freedom':
-    config = """experiment:
+if not os.path.exists('./config_files/'):
+    os.makedirs('./config_files/')
+
+config = """experiment:
   backend: pytorch
   path_output_rec_result: ./results/{0}/folder/recs/
   path_output_rec_weight: ./results/{0}/folder/weights/
@@ -56,7 +57,7 @@ if args.model == 'freedom':
         verbose: True
         save_weights: False
         save_recs: False
-        validation_rate: 10
+        validation_rate: 1
         validation_metric: Recall@20
         restore: False
       lr: 0.001
@@ -79,122 +80,6 @@ if args.model == 'freedom':
         monitor: Recall@20
         verbose: True
 """
-elif args.model == 'vbpr':
-    config = """experiment:
-  backend: pytorch
-  path_output_rec_result: ./results/{0}/folder/recs/
-  path_output_rec_weight: ./results/{0}/folder/weights/
-  path_output_rec_performance: ./results/{0}/folder/performance/
-  data_config:
-    strategy: fixed
-    train_path: ../data/{0}/train.tsv
-    validation_path: ../data/{0}/val.tsv
-    test_path: ../data/{0}/test.tsv
-    side_information:
-      - dataloader: VisualAttribute
-        visual_features: ../data/{0}/image_feat
-        masked_items_path: ../data/{0}/visual_sampled_perc_round.txt
-        strategy: strategy_name_visual
-        feat_prop: co
-        prop_layers: propagation_layers
-      - dataloader: TextualAttribute
-        textual_features: ../data/{0}/text_feat
-        masked_items_path: ../data/{0}/textual_sampled_perc_round.txt
-        strategy: strategy_name_textual
-        feat_prop: co
-        prop_layers: propagation_layers
-  dataset: dataset_name
-  top_k: 50
-  evaluation:
-    cutoffs: [10, 20, 50]
-    simple_metrics: [Recall, nDCG, Precision]
-  gpu: gpu_id
-  external_models_path: ../external/models/__init__.py
-  models:
-    external.VBPR:
-      meta:
-        hyper_opt_alg: grid
-        verbose: True
-        save_weights: False
-        save_recs: False
-        validation_rate: 10
-        validation_metric: Recall@20
-        restore: False
-      lr: 0.005
-      modalities: ('visual', 'textual')
-      epochs: 200
-      factors: 64
-      batch_size: 1024
-      l_w: 1e-2
-      comb_mod: concat
-      seed: 123
-      early_stopping:
-        patience: 5
-        mode: auto
-        monitor: Recall@20
-        verbose: True
-    """
-else:
-    config = """experiment:
-  backend: pytorch
-  path_output_rec_result: ./results/{0}/folder/recs/
-  path_output_rec_weight: ./results/{0}/folder/weights/
-  path_output_rec_performance: ./results/{0}/folder/performance/
-  data_config:
-    strategy: fixed
-    train_path: ../data/{0}/train.tsv
-    validation_path: ../data/{0}/val.tsv
-    test_path: ../data/{0}/test.tsv
-    side_information:
-      - dataloader: VisualAttribute
-        visual_features: ../data/{0}/image_feat
-        masked_items_path: ../data/{0}/visual_sampled_perc_round.txt
-        strategy: strategy_name_visual
-        feat_prop: co
-        prop_layers: propagation_layers
-      - dataloader: TextualAttribute
-        textual_features: ../data/{0}/text_feat
-        masked_items_path: ../data/{0}/textual_sampled_perc_round.txt
-        strategy: strategy_name_textual
-        feat_prop: co
-        prop_layers: propagation_layers
-  dataset: dataset_name
-  top_k: 50
-  evaluation:
-    cutoffs: [10, 20, 50]
-    simple_metrics: [Recall, nDCG, Precision]
-  gpu: gpu_id
-  external_models_path: ../external/models/__init__.py
-  models:
-    external.BM3:
-      meta:
-        hyper_opt_alg: grid
-        verbose: True
-        save_weights: False
-        save_recs: False
-        validation_rate: 10
-        validation_metric: Recall@20
-        restore: False
-      lr: 0.005
-      multimod_factors: 64
-      reg_weight: 0.01
-      cl_weight: 2.0
-      dropout: 0.5
-      n_layers: 1
-      modalities: ('visual', 'textual')
-      epochs: 200
-      factors: 64
-      lr_sched: (1.0,50)
-      batch_size: 1024
-      seed: 123
-      early_stopping:
-        patience: 5
-        mode: auto
-        monitor: Recall@20
-        verbose: True
-    """
-
-random.seed(42)
 
 for idx, c in enumerate(final):
     visual_strategy = c[0][0]

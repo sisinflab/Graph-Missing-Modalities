@@ -144,7 +144,7 @@ class FREEDOM(RecMixin, BaseRecommenderModel):
         predictions_top_k_val = {}
         self._model.eval()
         with torch.no_grad():
-            gum, gim = self._model.propagate_embeddings(self._model.adj.to_dense())
+            gum, gim = self._model.propagate_embeddings(self._model.adj.to_torch_sparse_coo_tensor())
             for index, offset in enumerate(range(0, self._num_users, self._batch_size)):
                 offset_stop = min(offset + self._batch_size, self._num_users)
                 predictions = self._model.predict(gum[offset: offset_stop], gim)
