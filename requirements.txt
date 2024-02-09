@@ -10,5 +10,5 @@ pandas
 Pillow
 PyYAML
 scikit_learn
-visdm
+visdom
 Pyarrow
