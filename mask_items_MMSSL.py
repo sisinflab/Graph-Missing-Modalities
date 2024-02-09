@@ -11,7 +11,7 @@ seed = 42
 num_repeats = 5
 num_items = {
     'baby': 7050,
-    'toys': 11924,
+    'toys': 11879,
     'sports': 18357
 }
 
