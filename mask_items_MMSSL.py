@@ -1,7 +1,12 @@
 import pandas as pd
 import random
+import argparse
 
-data = 'baby'
+parser = argparse.ArgumentParser(description="Run training and evaluation.")
+parser.add_argument('--data', type=str, default='baby')
+args = parser.parse_args()
+
+data = args.data
 seed = 42
 num_repeats = 5
 num_items = {
