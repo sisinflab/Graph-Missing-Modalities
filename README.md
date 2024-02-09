@@ -38,8 +38,8 @@ pip install -r requirements_torch_geometric.txt
 
 Then, we generate the multimodal recommendation datasets with missing modalities:
 ```sh
-python3 mask_items_MMSSL.py && \
-python3 mask_items_FREEDOM.py
+python3 mask_items_MMSSL.py --data {dataset} && \
+python3 mask_items_FREEDOM.py --data {dataset}
 ``` 
 
 The output files will be stored at the following paths:
