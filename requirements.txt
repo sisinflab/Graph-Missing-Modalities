@@ -11,3 +11,4 @@ Pillow
 PyYAML
 scikit_learn
 visdm
+Pyarrow
