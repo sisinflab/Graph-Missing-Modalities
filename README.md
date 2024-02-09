@@ -33,7 +33,7 @@ Second, we install the useful requirements:
 ```sh
 pip install -r requirements.txt && \
 pip install -r requirements_dgl.txt && \
-pip install -r reqirements_torch_geometric.txt
+pip install -r requirements_torch_geometric.txt
 ``` 
 
 Then, we generate the multimodal recommendation datasets with missing modalities:
