@@ -46,5 +46,5 @@ if not os.path.exists(textual_embeddings_folder_indexed):
     os.makedirs(textual_embeddings_folder_indexed)
 
 for key, value in items_map.items():
-    np.save(f'data/{args.data}/{visual_embeddings_folder_indexed}/{value}.npy', np.load(f'data/{args.data}/{visual_embeddings_folder}/{key}.npy'))
-    np.save(f'data/{args.data}/{textual_embeddings_folder_indexed}/{value}.npy', np.load(f'data/{args.data}/{textual_embeddings_folder}/{key}.npy'))
+    np.save(f'{visual_embeddings_folder_indexed}/{value}.npy', np.load(f'{visual_embeddings_folder}/{key}.npy'))
+    np.save(f'{textual_embeddings_folder_indexed}/{value}.npy', np.load(f'{textual_embeddings_folder}/{key}.npy'))
