@@ -48,10 +48,10 @@ if args.method == 'zeros':
 
 elif args.method == 'random':
     for miss in missing_visual:
-        np.save(os.path.join(output_visual, f'{args.method}/{miss}.npy'), np.random.rand(*visual_shape))
+        np.save(os.path.join(output_visual, f'{miss}.npy'), np.random.rand(*visual_shape))
 
     for miss in missing_textual:
-        np.save(os.path.join(output_textual, f'{args.method}/{miss}.npy'), np.random.rand(*textual_shape))
+        np.save(os.path.join(output_textual, f'{miss}.npy'), np.random.rand(*textual_shape))
 
 elif args.method == 'mean':
     num_items_visual = len(os.listdir(visual_folder))
@@ -80,7 +80,7 @@ visual_items = os.listdir(visual_folder)
 textual_items = os.listdir(textual_folder)
 
 for it in visual_items:
-    shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual, args.method))
+    shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
 
 for it in textual_items:
-    shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual, args.method))
+    shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))
