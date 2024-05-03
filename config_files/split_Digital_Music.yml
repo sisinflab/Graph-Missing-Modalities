@@ -2,7 +2,7 @@ experiment:
   backend: pytorch
   data_config:
     strategy: dataset
-    dataset_path: ../data/{0}/final_reviews.tsv
+    dataset_path: ../data/{0}/original_reviews.tsv
   splitting:
     save_on_disk: True
     save_folder: ../data/{0}_splits/
