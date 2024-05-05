@@ -159,7 +159,7 @@ elif args.method == 'feat_prop':
         propagated_visual_features[non_missing_items] = visual_features[non_missing_items].to(device)
 
     for miss in missing_visual_indexed:
-        np.save(os.path.join(output_visual, f'{miss}.npy'), propagated_visual_features[miss])
+        np.save(os.path.join(output_visual, f'{miss}.npy'), propagated_visual_features[miss].detach().cpu().numpy())
 
     # feat prop on textual features
     for f in os.listdir(f'data/{args.data}/textual_embeddings_zeros_indexed'):
@@ -174,7 +174,7 @@ elif args.method == 'feat_prop':
         propagated_textual_features[non_missing_items] = textual_features[non_missing_items].to(device)
 
     for miss in missing_textual_indexed:
-        np.save(os.path.join(output_textual, f'{miss}.npy'), propagated_textual_features[miss])
+        np.save(os.path.join(output_textual, f'{miss}.npy'), propagated_textual_features[miss].detach().cpu().numpy())
 
 visual_items = os.listdir(visual_folder)
 textual_items = os.listdir(textual_folder)
