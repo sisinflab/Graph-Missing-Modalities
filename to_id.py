@@ -7,7 +7,6 @@ parser = argparse.ArgumentParser(description="Run to id.")
 parser.add_argument('--data', type=str, default='Digital_Music')
 parser.add_argument('--method', type=str, default='zeros')
 parser.add_argument('--layers', type=str, default='1')
-parser.add_argument('--method', type=str, default='feat_prop')
 parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
 
