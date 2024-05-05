@@ -99,8 +99,8 @@ elif args.method == 'mean':
             np.save(os.path.join(output_textual, f'{miss}.npy'), mean_textual)
 
 elif args.method == 'feat_prop':
-    visual_folder = f'data/{args.data}/visual_embeddings_zeros'
-    textual_folder = f'data/{args.data}/textual_embeddings_zeros'
+    visual_folder = f'data/{args.data}/visual_embeddings_zeros_indexed'
+    textual_folder = f'data/{args.data}/textual_embeddings_zeros_indexed'
 
     output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
     output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
@@ -178,11 +178,21 @@ elif args.method == 'feat_prop':
     for miss in missing_textual_indexed:
         np.save(os.path.join(output_textual, f'{miss}.npy'), propagated_textual_features[miss].detach().cpu().numpy())
 
-visual_items = os.listdir(visual_folder)
-textual_items = os.listdir(textual_folder)
+if args.method == 'feat_prop':
+    visual_items = set(os.listdir(visual_folder)).difference(missing_visual_indexed)
+    textual_items = set(os.listdir(textual_folder)).difference(missing_textual_indexed)
 
-for it in visual_items:
-    shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
+    for it in visual_items:
+        shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
 
-for it in textual_items:
-    shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))
+    for it in textual_items:
+        shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))
+else:
+    visual_items = os.listdir(visual_folder)
+    textual_items = os.listdir(textual_folder)
+
+    for it in visual_items:
+        shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
+
+    for it in textual_items:
+        shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))
