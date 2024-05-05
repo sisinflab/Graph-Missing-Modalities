@@ -6,19 +6,32 @@ import argparse
 parser = argparse.ArgumentParser(description="Run to id.")
 parser.add_argument('--data', type=str, default='Digital_Music')
 parser.add_argument('--method', type=str, default='zeros')
+parser.add_argument('--layers', type=str, default='1')
+parser.add_argument('--method', type=str, default='feat_prop')
+parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
 
-visual_embeddings_folder = f'data/{args.data}/visual_embeddings_{args.method}'
-textual_embeddings_folder = f'data/{args.data}/textual_embeddings_{args.method}'
+if args.method != 'feat_prop':
+    visual_embeddings_folder = f'data/{args.data}/visual_embeddings_{args.method}'
+    textual_embeddings_folder = f'data/{args.data}/textual_embeddings_{args.method}'
 
-visual_embeddings_folder_indexed = f'data/{args.data}/visual_embeddings_{args.method}_indexed'
-textual_embeddings_folder_indexed = f'data/{args.data}/textual_embeddings_{args.method}_indexed'
+    visual_embeddings_folder_indexed = f'data/{args.data}/visual_embeddings_{args.method}_indexed'
+    textual_embeddings_folder_indexed = f'data/{args.data}/textual_embeddings_{args.method}_indexed'
+else:
+    visual_embeddings_folder = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}'
+    textual_embeddings_folder = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}'
+
+    visual_embeddings_folder_indexed = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+    textual_embeddings_folder_indexed = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
 
 train = pd.read_csv(f'data/{args.data}/train.tsv', sep='\t', header=None)
 val = pd.read_csv(f'data/{args.data}/val.tsv', sep='\t', header=None)
 test = pd.read_csv(f'data/{args.data}/test.tsv', sep='\t', header=None)
 
 df = pd.concat([train, val, test], axis=0)
+
+missing_visual = pd.read_csv(f'data/{args.data}/missing_visual.tsv', sep='\t', header=None)
+missing_textual = pd.read_csv(f'data/{args.data}/missing_textual.tsv', sep='\t', header=None)
 
 users = df[0].unique()
 items = df[1].unique()
@@ -35,9 +48,28 @@ val[1] = val[1].map(items_map)
 test[0] = test[0].map(users_map)
 test[1] = test[1].map(items_map)
 
+try:
+    missing_visual[0] = missing_visual[0].map(items_map)
+except pd.errors.EmptyDataError:
+    pass
+
+try:
+    missing_textual[0] = missing_textual[0].map(items_map)
+except pd.errors.EmptyDataError:
+    pass
+
+users_map_df = pd.DataFrame(list(users_map.items()))
+items_map_df = pd.DataFrame(list(items_map.items()))
+
+users_map_df.to_csv(f'data/{args.data}/users_map.tsv', index=False, header=None, sep='\t')
+items_map_df.to_csv(f'data/{args.data}/items_map.tsv', index=False, header=None, sep='\t')
+
 train.to_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', index=False, header=None)
 val.to_csv(f'data/{args.data}/val_indexed.tsv', sep='\t', index=False, header=None)
 test.to_csv(f'data/{args.data}/test_indexed.tsv', sep='\t', index=False, header=None)
+
+missing_visual.to_csv(f'data/{args.data}/missing_visual_indexed.tsv', index=False, header=None, sep='\t')
+missing_textual.to_csv(f'data/{args.data}/missing_textual_indexed.tsv', index=False, header=None, sep='\t')
 
 if not os.path.exists(visual_embeddings_folder_indexed):
     os.makedirs(visual_embeddings_folder_indexed)

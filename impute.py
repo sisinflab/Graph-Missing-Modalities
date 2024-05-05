@@ -3,6 +3,9 @@ import os
 import pandas as pd
 import numpy as np
 import shutil
+import torch
+from torch_sparse import SparseTensor, mul, sum, fill_diag, matmul
+import scipy.sparse as sp
 
 np.random.seed(42)
 
@@ -10,7 +13,8 @@ parser = argparse.ArgumentParser(description="Run imputation.")
 parser.add_argument('--data', type=str, default='Digital_Music')
 parser.add_argument('--gpu', type=str, default='0')
 parser.add_argument('--layers', type=str, default='1')
-parser.add_argument('--method', type=str, default='zeros')
+parser.add_argument('--method', type=str, default='feat_prop')
+parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
 
 visual_folder = f'data/{args.data}/visual_embeddings/torch/ResNet50/avgpool'
@@ -75,6 +79,44 @@ elif args.method == 'mean':
         mean_textual = textual_features.mean(axis=0, keepdims=True)
         for miss in missing_textual:
             np.save(os.path.join(output_textual, f'{miss}.npy'), mean_textual)
+
+elif args.method == 'feat_prop':
+    try:
+        train = pd.read_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', header=None)
+    except FileNotFoundError:
+        print('Before imputing through feat_prop, split the dataset into train/val/test!')
+        exit()
+
+    try:
+        num_items_visual = len(os.listdir(f'data/{args.data}/visual_embeddings_zeros'))
+        num_items_textual = len(os.listdir(f'data/{args.data}/textual_embeddings_zeros'))
+    except FileNotFoundError:
+        print('Before imputing through feat_prop, impute through zeros!')
+        exit()
+
+    visual_features = torch.empty((num_items_visual, visual_shape[-1]))
+    textual_features = torch.empty((num_items_textual, textual_shape[-1]))
+
+    user_item = sp.coo_matrix(([1.0]*len(train), (train[0].tolist(), train[1].tolist())),
+                              shape=(train[0].nunique(), train[1].nunique()), dtype=np.float32)
+
+    try:
+        missing_visual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_visual_indexed.tsv'), sep='\t', header=None)
+        missing_visual_indexed = set(missing_visual_indexed[0].tolist())
+    except pd.errors.EmptyDataError:
+        missing_visual_indexed = set()
+
+    try:
+        missing_textual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_textual_indexed.tsv'), sep='\t', header=None)
+        missing_textual_indexed = set(missing_textual_indexed[0].tolist())
+    except pd.errors.EmptyDataError:
+        missing_textual_indexed = set()
+
+    print()
+
+    # feat prop on visual features
+
+    # feat prop on textual features
 
 visual_items = os.listdir(visual_folder)
 textual_items = os.listdir(textual_folder)
