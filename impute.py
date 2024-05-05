@@ -50,15 +50,15 @@ except pd.errors.EmptyDataError:
 visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
 textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
 
-if not os.path.exists(output_visual):
-    if args.method == 'feat_prop':
+if args.method == 'feat_prop':
+    if not os.path.exists(output_visual + f'_{args.layers}_{args.top_k}_indexed'):
         os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_indexed')
-    else:
-        os.makedirs(output_visual)
-if not os.path.exists(output_textual):
-    if args.method == 'feat_prop':
+    if not os.path.exists(output_textual + f'_{args.layers}_{args.top_k}_indexed'):
         os.makedirs(output_textual + f'_{args.layers}_{args.top_k}_indexed')
-    else:
+else:
+    if not os.path.exists(output_visual):
+        os.makedirs(output_visual)
+    if not os.path.exists(output_textual):
         os.makedirs(output_textual)
 
 if args.method == 'zeros':
