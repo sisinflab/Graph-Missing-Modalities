@@ -22,7 +22,7 @@ def compute_normalized_laplacian(adj, norm):
 parser = argparse.ArgumentParser(description="Run imputation.")
 parser.add_argument('--data', type=str, default='Digital_Music')
 parser.add_argument('--gpu', type=str, default='0')
-parser.add_argument('--layers', type=int, default=1)
+parser.add_argument('--layers', type=int, default=3)
 parser.add_argument('--method', type=str, default='feat_prop')
 parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
