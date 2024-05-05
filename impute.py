@@ -156,7 +156,7 @@ elif args.method == 'feat_prop':
     for idx in range(args.layers):
         print(f'[VISUAL] Propagation layer: {idx + 1}')
         propagated_visual_features = matmul(adj.to(device), propagated_visual_features.to(device))
-        propagated_visual_features[non_missing_items] = visual_features[non_missing_items]
+        propagated_visual_features[non_missing_items] = visual_features[non_missing_items].to(device)
 
     for miss in missing_visual_indexed:
         np.save(os.path.join(output_visual, f'{miss}.npy'), propagated_visual_features[miss])
@@ -171,7 +171,7 @@ elif args.method == 'feat_prop':
     for idx in range(args.layers):
         print(f'[TEXTUAL] Propagation layer: {idx + 1}')
         propagated_textual_features = matmul(adj.to(device), propagated_textual_features.to(device))
-        propagated_textual_features[non_missing_items] = textual_features[non_missing_items]
+        propagated_textual_features[non_missing_items] = textual_features[non_missing_items].to(device)
 
     for miss in missing_textual_indexed:
         np.save(os.path.join(output_textual, f'{miss}.npy'), propagated_textual_features[miss])
