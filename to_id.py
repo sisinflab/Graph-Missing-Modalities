@@ -29,9 +29,6 @@ test = pd.read_csv(f'data/{args.data}/test.tsv', sep='\t', header=None)
 
 df = pd.concat([train, val, test], axis=0)
 
-missing_visual = pd.read_csv(f'data/{args.data}/missing_visual.tsv', sep='\t', header=None)
-missing_textual = pd.read_csv(f'data/{args.data}/missing_textual.tsv', sep='\t', header=None)
-
 users = df[0].unique()
 items = df[1].unique()
 
@@ -48,12 +45,16 @@ test[0] = test[0].map(users_map)
 test[1] = test[1].map(items_map)
 
 try:
+    missing_visual = pd.read_csv(f'data/{args.data}/missing_visual.tsv', sep='\t', header=None)
     missing_visual[0] = missing_visual[0].map(items_map)
+    missing_visual.to_csv(f'data/{args.data}/missing_visual_indexed.tsv', index=False, header=None, sep='\t')
 except pd.errors.EmptyDataError:
     pass
 
 try:
+    missing_textual = pd.read_csv(f'data/{args.data}/missing_textual.tsv', sep='\t', header=None)
     missing_textual[0] = missing_textual[0].map(items_map)
+    missing_textual.to_csv(f'data/{args.data}/missing_textual_indexed.tsv', index=False, header=None, sep='\t')
 except pd.errors.EmptyDataError:
     pass
 
@@ -66,9 +67,6 @@ items_map_df.to_csv(f'data/{args.data}/items_map.tsv', index=False, header=None,
 train.to_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', index=False, header=None)
 val.to_csv(f'data/{args.data}/val_indexed.tsv', sep='\t', index=False, header=None)
 test.to_csv(f'data/{args.data}/test_indexed.tsv', sep='\t', index=False, header=None)
-
-missing_visual.to_csv(f'data/{args.data}/missing_visual_indexed.tsv', index=False, header=None, sep='\t')
-missing_textual.to_csv(f'data/{args.data}/missing_textual_indexed.tsv', index=False, header=None, sep='\t')
 
 if not os.path.exists(visual_embeddings_folder_indexed):
     os.makedirs(visual_embeddings_folder_indexed)
