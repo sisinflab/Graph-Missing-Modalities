@@ -6,22 +6,13 @@ import argparse
 parser = argparse.ArgumentParser(description="Run to id.")
 parser.add_argument('--data', type=str, default='Digital_Music')
 parser.add_argument('--method', type=str, default='zeros')
-parser.add_argument('--layers', type=str, default='1')
-parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
 
-if args.method != 'feat_prop':
-    visual_embeddings_folder = f'data/{args.data}/visual_embeddings_{args.method}'
-    textual_embeddings_folder = f'data/{args.data}/textual_embeddings_{args.method}'
+visual_embeddings_folder = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}'
+textual_embeddings_folder = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}'
 
-    visual_embeddings_folder_indexed = f'data/{args.data}/visual_embeddings_{args.method}_indexed'
-    textual_embeddings_folder_indexed = f'data/{args.data}/textual_embeddings_{args.method}_indexed'
-else:
-    visual_embeddings_folder = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}'
-    textual_embeddings_folder = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}'
-
-    visual_embeddings_folder_indexed = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
-    textual_embeddings_folder_indexed = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+visual_embeddings_folder_indexed = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+textual_embeddings_folder_indexed = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
 
 train = pd.read_csv(f'data/{args.data}/train.tsv', sep='\t', header=None)
 val = pd.read_csv(f'data/{args.data}/val.tsv', sep='\t', header=None)
