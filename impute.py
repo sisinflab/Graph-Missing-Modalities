@@ -99,6 +99,8 @@ elif args.method == 'mean':
             np.save(os.path.join(output_textual, f'{miss}.npy'), mean_textual)
 
 elif args.method == 'feat_prop':
+    visual_folder = f'data/{args.data}/visual_embeddings_zeros'
+    textual_folder = f'data/{args.data}/textual_embeddings_zeros'
 
     output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
     output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
