@@ -15,3 +15,4 @@ for _backend in sys.modules["external"].backend:
     elif _backend == "pytorch":
         from .freedom.FREEDOM import FREEDOM
         from .bprmf.BPRMF import BPRMF
+        from .vbpr.VBPR import VBPR
