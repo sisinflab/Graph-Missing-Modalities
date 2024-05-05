@@ -137,13 +137,13 @@ elif args.method == 'feat_prop':
     try:
         missing_visual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_visual_indexed.tsv'), sep='\t', header=None)
         missing_visual_indexed = set(missing_visual_indexed[0].tolist())
-    except pd.errors.EmptyDataError | FileNotFoundError:
+    except (pd.errors.EmptyDataError, FileNotFoundError):
         missing_visual_indexed = set()
 
     try:
         missing_textual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_textual_indexed.tsv'), sep='\t', header=None)
         missing_textual_indexed = set(missing_textual_indexed[0].tolist())
-    except pd.errors.EmptyDataError | FileNotFoundError:
+    except (pd.errors.EmptyDataError, FileNotFoundError):
         missing_textual_indexed = set()
 
     # feat prop on visual features
