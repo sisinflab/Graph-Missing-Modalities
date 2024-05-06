@@ -22,13 +22,11 @@ if args.method == 'feat_prop':
 
     for it in os.listdir(visual_folder_original_indexed):
         shutil.copy(os.path.join(visual_folder_original_indexed, it), visual_folder_complete)
-
     for it in os.listdir(visual_folder_imputed_indexed):
         shutil.copy(os.path.join(visual_folder_imputed_indexed, it), visual_folder_complete)
 
     for it in os.listdir(textual_folder_original_indexed):
         shutil.copy(os.path.join(textual_folder_original_indexed, it), textual_folder_complete)
-
     for it in os.listdir(textual_folder_imputed_indexed):
         shutil.copy(os.path.join(textual_folder_imputed_indexed, it), textual_folder_complete)
 
@@ -44,13 +42,11 @@ else:
 
     for it in os.listdir(visual_folder_original_indexed):
         shutil.copy(os.path.join(visual_folder_original_indexed, it), visual_folder_complete)
-
     for it in os.listdir(visual_folder_imputed_indexed):
         shutil.copy(os.path.join(visual_folder_imputed_indexed, it), visual_folder_complete)
 
     for it in os.listdir(textual_folder_original_indexed):
         shutil.copy(os.path.join(textual_folder_original_indexed, it), textual_folder_complete)
-
     for it in os.listdir(textual_folder_imputed_indexed):
         shutil.copy(os.path.join(textual_folder_imputed_indexed, it), textual_folder_complete)
 

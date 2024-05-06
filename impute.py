@@ -99,8 +99,8 @@ elif args.method == 'mean':
             np.save(os.path.join(output_textual, f'{miss}.npy'), mean_textual)
 
 elif args.method == 'feat_prop':
-    visual_folder = f'data/{args.data}/visual_embeddings_zeros_indexed'
-    textual_folder = f'data/{args.data}/textual_embeddings_zeros_indexed'
+    visual_folder = f'data/{args.data}/visual_embeddings_indexed'
+    textual_folder = f'data/{args.data}/textual_embeddings_indexed'
 
     output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
     output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
@@ -111,15 +111,11 @@ elif args.method == 'feat_prop':
         print('Before imputing through feat_prop, split the dataset into train/val/test!')
         exit()
 
-    try:
-        num_items_visual = len(os.listdir(f'data/{args.data}/visual_embeddings_zeros_indexed'))
-        num_items_textual = len(os.listdir(f'data/{args.data}/textual_embeddings_zeros_indexed'))
-    except FileNotFoundError:
-        print('Before imputing through feat_prop, impute through zeros!')
-        exit()
+    num_items_visual = len(missing_visual) + len(os.listdir(visual_folder))
+    num_items_textual = len(missing_textual) + len(os.listdir(textual_folder))
 
-    visual_features = torch.empty((num_items_visual, visual_shape[-1]))
-    textual_features = torch.empty((num_items_textual, textual_shape[-1]))
+    visual_features = torch.zeros((num_items_visual, visual_shape[-1]))
+    textual_features = torch.zeros((num_items_textual, textual_shape[-1]))
 
     # compute item_item matrix
     user_item = sp.coo_matrix(([1.0]*len(train), (train[0].tolist(), train[1].tolist())),
@@ -149,8 +145,8 @@ elif args.method == 'feat_prop':
         missing_textual_indexed = set()
 
     # feat prop on visual features
-    for f in os.listdir(f'data/{args.data}/visual_embeddings_zeros_indexed'):
-        visual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(np.load(os.path.join(f'data/{args.data}/visual_embeddings_zeros_indexed', f)))
+    for f in os.listdir(f'data/{args.data}/visual_embeddings_indexed'):
+        visual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(np.load(os.path.join(f'data/{args.data}/visual_embeddings_indexed', f)))
 
     non_missing_items = list(set(list(range(num_items_visual))).difference(missing_visual_indexed))
     propagated_visual_features = visual_features.clone()
@@ -164,8 +160,8 @@ elif args.method == 'feat_prop':
         np.save(os.path.join(output_visual, f'{miss}.npy'), propagated_visual_features[miss].detach().cpu().numpy())
 
     # feat prop on textual features
-    for f in os.listdir(f'data/{args.data}/textual_embeddings_zeros_indexed'):
-        textual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(np.load(os.path.join(f'data/{args.data}/textual_embeddings_zeros_indexed', f)))
+    for f in os.listdir(f'data/{args.data}/textual_embeddings_indexed'):
+        textual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(np.load(os.path.join(f'data/{args.data}/textual_embeddings_indexed', f)))
 
     non_missing_items = list(set(list(range(num_items_textual))).difference(missing_textual_indexed))
     propagated_textual_features = textual_features.clone()
