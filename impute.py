@@ -178,23 +178,23 @@ elif args.method == 'feat_prop':
     for miss in missing_textual_indexed:
         np.save(os.path.join(output_textual, f'{miss}.npy'), propagated_textual_features[miss].detach().cpu().numpy())
 
-if args.method == 'feat_prop':
-    visual_items = os.listdir(visual_folder)
-    textual_items = os.listdir(textual_folder)
-
-    for it in visual_items:
-        if int(it.split('.npy')[0]) not in missing_visual_indexed:
-            shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
-
-    for it in textual_items:
-        if int(it.split('.npy')[0]) not in missing_textual_indexed:
-            shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))
-else:
-    visual_items = os.listdir(visual_folder)
-    textual_items = os.listdir(textual_folder)
-
-    for it in visual_items:
-        shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
-
-    for it in textual_items:
-        shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))
+# if args.method == 'feat_prop':
+#     visual_items = os.listdir(visual_folder)
+#     textual_items = os.listdir(textual_folder)
+#
+#     for it in visual_items:
+#         if int(it.split('.npy')[0]) not in missing_visual_indexed:
+#             shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
+#
+#     for it in textual_items:
+#         if int(it.split('.npy')[0]) not in missing_textual_indexed:
+#             shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))
+# else:
+#     visual_items = os.listdir(visual_folder)
+#     textual_items = os.listdir(textual_folder)
+#
+#     for it in visual_items:
+#         shutil.copy(os.path.join(visual_folder, it), os.path.join(output_visual))
+#
+#     for it in textual_items:
+#         shutil.copy(os.path.join(textual_folder, it), os.path.join(output_textual))

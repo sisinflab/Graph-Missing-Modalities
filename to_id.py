@@ -8,11 +8,17 @@ parser.add_argument('--data', type=str, default='Digital_Music')
 parser.add_argument('--method', type=str, default='zeros')
 args = parser.parse_args()
 
-visual_embeddings_folder = f'data/{args.data}/visual_embeddings_{args.method}'
-textual_embeddings_folder = f'data/{args.data}/textual_embeddings_{args.method}'
+visual_folder_original = f'./data/{args.data}/visual_embeddings/torch/ResNet50/avgpool'
+textual_folder_original = f'./data/{args.data}/textual_embeddings/sentence_transformers/sentence-transformers/all-mpnet-base-v2/1'
 
-visual_embeddings_folder_indexed = f'data/{args.data}/visual_embeddings_{args.method}_indexed'
-textual_embeddings_folder_indexed = f'data/{args.data}/textual_embeddings_{args.method}_indexed'
+visual_folder_imputed = f'data/{args.data}/visual_embeddings_{args.method}'
+textual_folder_imputed = f'data/{args.data}/textual_embeddings_{args.method}'
+
+visual_folder_original_indexed = f'./data/{args.data}/visual_embeddings_indexed'
+textual_folder_original_indexed = f'./data/{args.data}/textual_embeddings_indexed'
+
+visual_folder_imputed_indexed = f'data/{args.data}/visual_embeddings_{args.method}_indexed'
+textual_folder_imputed_indexed = f'data/{args.data}/textual_embeddings_{args.method}_indexed'
 
 train = pd.read_csv(f'data/{args.data}/train.tsv', sep='\t', header=None)
 val = pd.read_csv(f'data/{args.data}/val.tsv', sep='\t', header=None)
@@ -59,12 +65,26 @@ train.to_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', index=False, heade
 val.to_csv(f'data/{args.data}/val_indexed.tsv', sep='\t', index=False, header=None)
 test.to_csv(f'data/{args.data}/test_indexed.tsv', sep='\t', index=False, header=None)
 
-if not os.path.exists(visual_embeddings_folder_indexed):
-    os.makedirs(visual_embeddings_folder_indexed)
+visual_folder_original_indexed = f'./data/{args.data}/visual_embeddings_indexed'
+textual_folder_original_indexed = f'./data/{args.data}/textual_embeddings_indexed'
 
-if not os.path.exists(textual_embeddings_folder_indexed):
-    os.makedirs(textual_embeddings_folder_indexed)
+visual_folder_imputed_indexed = f'data/{args.data}/visual_embeddings_{args.method}_indexed'
+textual_folder_imputed_indexed = f'data/{args.data}/textual_embeddings_{args.method}_indexed'
+
+if not os.path.exists(visual_folder_original_indexed):
+    os.makedirs(visual_folder_original_indexed)
+
+if not os.path.exists(textual_folder_original_indexed):
+    os.makedirs(textual_folder_original_indexed)
+
+if not os.path.exists(visual_folder_imputed_indexed):
+    os.makedirs(visual_folder_imputed_indexed)
+
+if not os.path.exists(textual_folder_imputed_indexed):
+    os.makedirs(textual_folder_imputed_indexed)
 
 for key, value in items_map.items():
-    np.save(f'{visual_embeddings_folder_indexed}/{value}.npy', np.load(f'{visual_embeddings_folder}/{key}.npy'))
-    np.save(f'{textual_embeddings_folder_indexed}/{value}.npy', np.load(f'{textual_embeddings_folder}/{key}.npy'))
+    np.save(f'{visual_folder_original_indexed}/{value}.npy', np.load(f'{visual_folder_original}/{key}.npy'))
+    np.save(f'{textual_folder_original_indexed}/{value}.npy', np.load(f'{textual_folder_original}/{key}.npy'))
+    np.save(f'{visual_folder_imputed_indexed}/{value}.npy', np.load(f'{visual_folder_imputed}/{key}.npy'))
+    np.save(f'{textual_folder_imputed_indexed}/{value}.npy', np.load(f'{textual_folder_imputed}/{key}.npy'))
