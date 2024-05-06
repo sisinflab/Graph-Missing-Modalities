@@ -29,9 +29,9 @@ if args.model == 'vbpr':
     test_path: ../data/{0}/test_indexed.tsv
     side_information:
       - dataloader: VisualAttribute
-        visual_features: ../data/{0}/visual_embeddings_feat_prop_{1}_{2}_indexed
+        visual_features: ../data/{0}/visual_embeddings_feat_prop_{1}_{2}_complete_indexed
       - dataloader: TextualAttribute
-        textual_features: ../data/{0}/textual_embeddings_feat_prop_{1}_{2}_indexed
+        textual_features: ../data/{0}/textual_embeddings_feat_prop_{1}_{2}_complete_indexed
   dataset: dataset_name
   top_k: 50
   evaluation:
@@ -75,15 +75,19 @@ textual_folder_imputed_indexed = f'./data/{args.dataset}/textual_embeddings_{arg
 visual_folder_complete = f'./data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
 textual_folder_complete = f'./data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
 
+if not os.path.exists(visual_folder_complete):
+    os.makedirs(visual_folder_complete)
+
+if not os.path.exists(textual_folder_complete):
+    os.makedirs(textual_folder_complete)
+
 for it in os.listdir(visual_folder_original_indexed):
     shutil.copy(os.path.join(visual_folder_original_indexed, it), visual_folder_complete)
-
 for it in os.listdir(visual_folder_imputed_indexed):
     shutil.copy(os.path.join(visual_folder_imputed_indexed, it), visual_folder_complete)
 
 for it in os.listdir(textual_folder_original_indexed):
     shutil.copy(os.path.join(textual_folder_original_indexed, it), textual_folder_complete)
-
 for it in os.listdir(textual_folder_imputed_indexed):
     shutil.copy(os.path.join(textual_folder_imputed_indexed, it), textual_folder_complete)
 
