@@ -20,6 +20,12 @@ if args.method == 'feat_prop':
     visual_folder_complete = f'./data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
     textual_folder_complete = f'./data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
 
+    if not os.path.exists(visual_folder_complete):
+        os.makedirs(visual_folder_complete)
+
+    if not os.path.exists(textual_folder_complete):
+        os.makedirs(textual_folder_complete)
+
     for it in os.listdir(visual_folder_original_indexed):
         shutil.copy(os.path.join(visual_folder_original_indexed, it), visual_folder_complete)
     for it in os.listdir(visual_folder_imputed_indexed):
@@ -39,6 +45,12 @@ else:
     textual_folder_imputed_indexed = f'./data/{args.dataset}/textual_embeddings_{args.method}_indexed'
     visual_folder_complete = f'./data/{args.dataset}/visual_embeddings_{args.method}_complete_indexed'
     textual_folder_complete = f'./data/{args.dataset}/textual_embeddings_{args.method}_complete_indexed'
+
+    if not os.path.exists(visual_folder_complete):
+        os.makedirs(visual_folder_complete)
+
+    if not os.path.exists(textual_folder_complete):
+        os.makedirs(textual_folder_complete)
 
     for it in os.listdir(visual_folder_original_indexed):
         shutil.copy(os.path.join(visual_folder_original_indexed, it), visual_folder_complete)
