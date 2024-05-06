@@ -21,5 +21,5 @@ for hyp in hyperparams:
              f"--top_k {hyp['--top_k']} "
              f"--method feat_prop\n")
 
-with open("impute_all_feat_prop.sh", 'w') as f:
+with open(f"impute_all_feat_prop_{args.dataset}.sh", 'w') as f:
     f.write(bash)
