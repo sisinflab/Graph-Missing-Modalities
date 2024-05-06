@@ -83,8 +83,14 @@ if not os.path.exists(visual_folder_imputed_indexed):
 if not os.path.exists(textual_folder_imputed_indexed):
     os.makedirs(textual_folder_imputed_indexed)
 
-for key, value in items_map.items():
-    np.save(f'{visual_folder_original_indexed}/{value}.npy', np.load(f'{visual_folder_original}/{key}.npy'))
-    np.save(f'{textual_folder_original_indexed}/{value}.npy', np.load(f'{textual_folder_original}/{key}.npy'))
-    np.save(f'{visual_folder_imputed_indexed}/{value}.npy', np.load(f'{visual_folder_imputed}/{key}.npy'))
-    np.save(f'{textual_folder_imputed_indexed}/{value}.npy', np.load(f'{textual_folder_imputed}/{key}.npy'))
+for it in os.listdir(visual_folder_original):
+    np.save(f'{visual_folder_original_indexed}/{items_map[it]}.npy', np.load(f'{visual_folder_original}/{it}.npy'))
+
+for it in os.listdir(textual_folder_original):
+    np.save(f'{textual_folder_original_indexed}/{items_map[it]}.npy', np.load(f'{textual_folder_original}/{it}.npy'))
+
+for it in os.listdir(visual_folder_imputed):
+    np.save(f'{visual_folder_imputed_indexed}/{items_map[it]}.npy', np.load(f'{visual_folder_imputed}/{it}.npy'))
+
+for it in os.listdir(textual_folder_imputed):
+    np.save(f'{textual_folder_imputed_indexed}/{items_map[it]}.npy', np.load(f'{textual_folder_imputed}/{it}.npy'))
