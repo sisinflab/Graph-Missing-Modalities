@@ -27,7 +27,7 @@ def summary(configuration):
 
 
 def to_cmd(c):
-    command = ' '.join([f'{k} {v}' for k, v in c.items()])
+    command = ' '.join([f'{k}={v}' for k, v in c.items()])
     return command
 
 
@@ -58,9 +58,9 @@ def main():
 
         if not completed:
             command_line = (f'$HOME/.conda/envs/missing_multimod/bin/python run_multimodal_cluster.py {to_cmd(hyperparam)} '
-                            f'--dataset {args.dataset} '
-                            f'--method feat_prop '
-                            f'--model {args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
+                            f'--dataset={args.dataset} '
+                            f'--method=feat_prop '
+                            f'--model={args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
             command_lines |= {command_line}
 
     # Sort command lines and remove duplicates
