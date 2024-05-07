@@ -95,11 +95,13 @@ source ~/.bashrc
 set -x
 
 # Modules
+echo "Setting up modules"
 module purge
 module load anaconda3/2022.10/gcc-11.2.0
 module load cuda/11.8.0/gcc-11.2.0
 
 # Conda environment
+echo "Activate conda environment"
 source activate missing_multimod
 
 export LANG="en_US.utf8"
@@ -107,6 +109,7 @@ export LANGUAGE="en_US:en"
 
 cd $HOME/workspace/Graph-Missing-Modalities
 
+echo "Run experiments"
 """
 
     date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
