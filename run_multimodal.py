@@ -40,6 +40,7 @@ if args.method == 'feat_prop':
 
     shutil.rmtree(visual_folder_complete)
     shutil.rmtree(textual_folder_complete)
+    os.remove(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.dataset}.yml")
 else:
     visual_folder_imputed_indexed = f'./data/{args.dataset}/visual_embeddings_{args.method}_indexed'
     textual_folder_imputed_indexed = f'./data/{args.dataset}/textual_embeddings_{args.method}_indexed'
@@ -66,3 +67,5 @@ else:
 
     shutil.rmtree(visual_folder_complete)
     shutil.rmtree(textual_folder_complete)
+
+    os.remove(f"config_files/{args.model}_{args.method}_{args.dataset}.yml")

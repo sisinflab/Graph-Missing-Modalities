@@ -95,3 +95,4 @@ run_experiment(f"config_files/{args.model}_feat_prop_{args.layers}_{args.top_k}_
 
 shutil.rmtree(visual_folder_complete)
 shutil.rmtree(textual_folder_complete)
+os.remove(f"config_files/{args.model}_feat_prop_{args.layers}_{args.top_k}_{args.dataset}.yml")
