@@ -83,6 +83,7 @@ def main():
 #SBATCH --output=/workdir/%u/slogs/missing_multimod-%A_%a.out
 #SBATCH --error=/workdir/%u/slogs/missing_multimod-%A_%a.err
 #SBATCH --partition=gpu
+#SBATCH --job-name=missing_multimod-%A_%a
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB # memory in Mb
 #SBATCH --cpus-per-task=4 # number of cpus to use - there are 32 on each node.
