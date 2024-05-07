@@ -57,7 +57,7 @@ def main():
                 completed = 'Best Model params' in content
 
         if not completed:
-            command_line = (f'python run_multimodal_cluster.py {to_cmd(hyperparam)} '
+            command_line = (f'$HOME/.conda/envs/missing_multimod/bin/python run_multimodal_cluster.py {to_cmd(hyperparam)} '
                             f'--dataset {args.dataset} '
                             f'--method feat_prop '
                             f'--model {args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
