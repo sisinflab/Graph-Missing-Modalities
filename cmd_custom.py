@@ -87,7 +87,7 @@ def main():
 #SBATCH --mem=20GB # memory in Mb
 #SBATCH --cpus-per-task=4 # number of cpus to use - there are 32 on each node.
 #SBATCH --time=4:00:00 # time requested in days-hours:minutes:seconds
-#SBATCH --array=1-{0}%100
+#SBATCH --array=1-{0}
 
 echo "Setting up bash environment"
 source ~/.bashrc
