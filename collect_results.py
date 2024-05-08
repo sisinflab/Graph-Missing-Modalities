@@ -1,7 +1,7 @@
 import re
 
 # Open the file for reading
-file_path = "feat_prop_Digital_Music.out"
+file_path = "prova.out"
 best_model_results = []
 
 # Regular expression pattern to extract the best model results
