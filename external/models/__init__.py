@@ -16,3 +16,5 @@ for _backend in sys.modules["external"].backend:
         from .freedom.FREEDOM import FREEDOM
         from .bprmf.BPRMF import BPRMF
         from .vbpr.VBPR import VBPR
+        from .lightgcn.LightGCN import LightGCN
+        from .lightgcn_m.LightGCNM import LightGCNM
