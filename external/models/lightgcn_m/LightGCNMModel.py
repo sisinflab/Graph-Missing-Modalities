@@ -128,9 +128,9 @@ class LightGCNMModel(torch.nn.Module, ABC):
                 all_embeddings_collab += [list(
                     self.propagation_network.children()
                 )[layer](all_embeddings_collab[layer].to(self.device), self.adj.to(self.device))]
-                all_embeddings_multimod += [list(
+                all_embeddings_multim += [list(
                         self.propagation_network.children()
-                    )[layer](all_embeddings_multimod[layer].to(self.device), self.adj.to(self.device))]
+                    )[layer](all_embeddings_multim[layer].to(self.device), self.adj.to(self.device))]
 
         if evaluate:
             self.propagation_network.train()
