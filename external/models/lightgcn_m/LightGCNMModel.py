@@ -139,7 +139,7 @@ class LightGCNMModel(torch.nn.Module, ABC):
         all_embeddings_multimod = torch.mean(torch.stack(all_embeddings_multimod, 0), dim=0)
         # all_embeddings = sum([all_embeddings[k] * self.alpha[k] for k in range(len(all_embeddings))])
         gu, gi = torch.split(all_embeddings_collab, [self.num_users, self.num_items], 0)
-        fu, f1i torch.split(all_embeddings_multimod, [self.num_users, self.num_items], 0)
+        fu, fi = torch.split(all_embeddings_multimod, [self.num_users, self.num_items], 0)
 
         return gu, gi, fu, fi
 
