@@ -112,7 +112,7 @@ class LightGCNMModel(torch.nn.Module, ABC):
         ego_embeddings_collab = torch.cat((self.Gu.weight.to(self.device), self.Gi.weight.to(self.device)), 0)
         ego_embeddings_multim = torch.cat((self.Tu.weight.to(self.device), F_proj.to(self.device)), 0)
         all_embeddings_collab = [ego_embeddings_collab]
-        all_embeddings_multimod = [ego_embeddings_multimod]
+        all_embeddings_multim = [ego_embeddings_multim]
 
         for layer in range(0, self.n_layers):
             if evaluate:
@@ -121,9 +121,9 @@ class LightGCNMModel(torch.nn.Module, ABC):
                     all_embeddings_collab += [list(
                         self.propagation_network.children()
                     )[layer](all_embeddings_collab[layer].to(self.device), self.adj.to(self.device))]
-                    all_embeddings_multimod += [list(
+                    all_embeddings_multim += [list(
                         self.propagation_network.children()
-                    )[layer](all_embeddings_multimod[layer].to(self.device), self.adj.to(self.device))]
+                    )[layer](all_embeddings_multim[layer].to(self.device), self.adj.to(self.device))]
             else:
                 all_embeddings_collab += [list(
                     self.propagation_network.children()
@@ -136,10 +136,10 @@ class LightGCNMModel(torch.nn.Module, ABC):
             self.propagation_network.train()
 
         all_embeddings_collab = torch.mean(torch.stack(all_embeddings_collab, 0), dim=0)
-        all_embeddings_multimod = torch.mean(torch.stack(all_embeddings_multimod, 0), dim=0)
+        all_embeddings_multim = torch.mean(torch.stack(all_embeddings_multim, 0), dim=0)
         # all_embeddings = sum([all_embeddings[k] * self.alpha[k] for k in range(len(all_embeddings))])
         gu, gi = torch.split(all_embeddings_collab, [self.num_users, self.num_items], 0)
-        fu, fi = torch.split(all_embeddings_multimod, [self.num_users, self.num_items], 0)
+        fu, fi = torch.split(all_embeddings_multim, [self.num_users, self.num_items], 0)
 
         return gu, gi, fu, fi
 
