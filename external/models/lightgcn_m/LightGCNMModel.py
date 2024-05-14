@@ -52,8 +52,16 @@ class LightGCNMModel(torch.nn.Module, ABC):
             num_embeddings=self.num_users, embedding_dim=self.embed_k)
         torch.nn.init.xavier_uniform_(self.Gu.weight)
 
+        self.Gi = torch.nn.Embedding(
+            num_embeddings=self.num_items, embedding_dim=self.embed_k)
+        torch.nn.init.xavier_uniform_(self.Gi.weight)
+
         self.modalities = modalities
         self.aggregation = aggregation
+
+        self.Tu = torch.nn.Embedding(
+            num_embeddings=self.num_users, embedding_dim=self.embed_k)
+        torch.nn.init.xavier_uniform_(self.Tu.weight)
 
         self.F = torch.nn.ParameterList()
         if self.aggregation == 'concat':
@@ -100,49 +108,64 @@ class LightGCNMModel(torch.nn.Module, ABC):
             F_proj = [torch.nn.functional.normalize(self.proj[m_id](self.F[m_id].weight).to(self.device), p=2, dim=1)
                       for m_id in range(len(self.F))]
             F_proj = torch.sum(torch.stack(F_proj, dim=-1).to(self.device), dim=-1)
-        ego_embeddings = torch.cat((self.Gu.weight.to(self.device), F_proj.to(self.device)), 0)
-        all_embeddings = [ego_embeddings]
+
+        ego_embeddings_collab = torch.cat((self.Gu.weight.to(self.device), self.Gi.weight.to(self.device)), 0)
+        ego_embeddings_multim = torch.cat((self.Tu.weight.to(self.device), F_proj.to(self.device)), 0)
+        all_embeddings_collab = [ego_embeddings_collab]
+        all_embeddings_multimod = [ego_embeddings_multimod]
 
         for layer in range(0, self.n_layers):
             if evaluate:
                 self.propagation_network.eval()
                 with torch.no_grad():
-                    all_embeddings += [list(
+                    all_embeddings_collab += [list(
                         self.propagation_network.children()
-                    )[layer](all_embeddings[layer].to(self.device), self.adj.to(self.device))]
+                    )[layer](all_embeddings_collab[layer].to(self.device), self.adj.to(self.device))]
+                    all_embeddings_multimod += [list(
+                        self.propagation_network.children()
+                    )[layer](all_embeddings_multimod[layer].to(self.device), self.adj.to(self.device))]
             else:
-                all_embeddings += [list(
+                all_embeddings_collab += [list(
                     self.propagation_network.children()
-                )[layer](all_embeddings[layer].to(self.device), self.adj.to(self.device))]
+                )[layer](all_embeddings_collab[layer].to(self.device), self.adj.to(self.device))]
+                all_embeddings_multimod += [list(
+                        self.propagation_network.children()
+                    )[layer](all_embeddings_multimod[layer].to(self.device), self.adj.to(self.device))]
 
         if evaluate:
             self.propagation_network.train()
 
-        all_embeddings = torch.mean(torch.stack(all_embeddings, 0), dim=0)
+        all_embeddings_collab = torch.mean(torch.stack(all_embeddings_collab, 0), dim=0)
+        all_embeddings_multimod = torch.mean(torch.stack(all_embeddings_multimod, 0), dim=0)
         # all_embeddings = sum([all_embeddings[k] * self.alpha[k] for k in range(len(all_embeddings))])
-        gu, fi = torch.split(all_embeddings, [self.num_users, self.num_items], 0)
+        gu, gi = torch.split(all_embeddings_collab, [self.num_users, self.num_items], 0)
+        fu, f1i torch.split(all_embeddings_multimod, [self.num_users, self.num_items], 0)
 
-        return gu, fi
+        return gu, gi, fu, fi
 
     def forward(self, inputs, **kwargs):
-        gu, fi = inputs
+        gu, gi, fu, fi = inputs
         gamma_u = torch.squeeze(gu).to(self.device)
+        gamma_i = torch.squeeze(gi).to(self.device)
+        effe_u = torch.squeeze(fu).to(self.device)
         effe_i = torch.squeeze(fi).to(self.device)
 
-        xui = torch.sum(gamma_u * effe_i, 1)
+        xui = torch.sum(gamma_u * gamma_i, 1) + torch.sum(effe_u * effe_i, 1)
 
         return xui
 
-    def predict(self, gu, fi, **kwargs):
-        return torch.sigmoid(torch.matmul(gu.to(self.device), torch.transpose(fi.to(self.device), 0, 1)))
+    def predict(self, gu, gi, fu, fi, **kwargs):
+        return torch.sigmoid(torch.matmul(gu.to(self.device), torch.transpose(gi.to(self.device), 0, 1)) + torch.matmul(fu.to(self.device), torch.transpose(fi.to(self.device), 0, 1)))
 
     def train_step(self, batch):
-        gu, fi = self.propagate_embeddings()
+        gu, gi, fu, fi = self.propagate_embeddings()
         user, pos, neg = batch
-        xu_pos = self.forward(inputs=(gu[user[:, 0]], fi[pos[:, 0]]))
-        xu_neg = self.forward(inputs=(gu[user[:, 0]], fi[neg[:, 0]]))
+        xu_pos = self.forward(inputs=(gu[user[:, 0]], gi[pos[:, 0]], fu[user[:, 0]], fi[pos[:, 0]]))
+        xu_neg = self.forward(inputs=(gu[user[:, 0]], gi[neg[:, 0]], fu[user[:, 0]], fi[neg[:, 0]]))
         loss = torch.mean(torch.nn.functional.softplus(xu_neg - xu_pos))
         reg_loss = self.l_w * (1 / 2) * (self.Gu.weight[user[:, 0]].norm(2).pow(2) +
+                                         self.Gi.weight[pos[:, 0]].norm(2).pow(2) +
+                                         fu[user[:, 0]].norm(2).pow(2) + 
                                          fi[pos[:, 0]].norm(2).pow(2) +
                                          fi[neg[:, 0]].norm(2).pow(2)) / float(batch[0].shape[0])
         loss += reg_loss
