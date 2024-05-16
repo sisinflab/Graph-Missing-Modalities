@@ -8,10 +8,14 @@ import argparse
 from sklearn.model_selection import ParameterGrid
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='Baby', help='choose the dataset')
-parser.add_argument('--model', type=str, default='vbpr', help='choose the model')
+parser.add_argument('--dataset', type=str, default='gowalla', help='choose the dataset')
+parser.add_argument('--gpu_id', type=int, default=0, help='choose the gpu id')
 parser.add_argument('--batch_size_jobs', type=int, default=5, help='batch size for jobs')
-parser.add_argument('--cluster', type=str, default='mesocentre', help='cluster name')
+parser.add_argument('--cluster', type=str, default='cineca', help='cluster name')
+parser.add_argument('--mail_user', type=str, default='', help='your email')
+parser.add_argument('--account', type=str, default='', help='project name')
+
+args = parser.parse_args()
 
 args = parser.parse_args()
 
@@ -57,7 +61,7 @@ def main():
                 completed = 'Best Model params' in content
 
         if not completed:
-            command_line = (f'$HOME/.conda/envs/missing_multimod/bin/python run_multimodal_cluster.py {to_cmd(hyperparam)} '
+            command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
                             f'--dataset={args.dataset} '
                             f'--method=feat_prop '
                             f'--model={args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
@@ -75,39 +79,34 @@ def main():
     if args.batch_size_jobs == -1:
         args.batch_size_jobs = nb_jobs
 
-    if args.cluster == 'margaret':
-        header = None
-    else:
+    if args.cluster == 'cineca':
         header = """#!/bin/bash -l
-
-#SBATCH --output=/workdir/%u/slogs/missing_multimod-%A_%a.out
-#SBATCH --error=/workdir/%u/slogs/missing_multimod-%A_%a.err
-#SBATCH --partition=gpu
-#SBATCH --job-name=missing_multimod
-#SBATCH --gres=gpu:1
-#SBATCH --mem=20GB # memory in Mb
-#SBATCH --cpus-per-task=4 # number of cpus to use - there are 32 on each node.
-#SBATCH --time=4:00:00 # time requested in days-hours:minutes:seconds
+#SBATCH --job-name=SisInf_Missing_Multimod
+#SBATCH --time=24:00:00                                   ## format: HH:MM:SS
+#SBATCH --nodes=1
+#SBATCH --mem=20GB                                       ## memory per node out of 494000MB (481GB)
+#SBATCH --output=../../../../slogs/SisInf_Missing_Multimod_output-%A_%a.out
+#SBATCH --error=../../../../slogs/SisInf_Missing_Multimod_error-%A_%a.err
+#SBATCH --account={1}
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user={2}
+#SBATCH --gres=gpu:1                                    ##    1 out of 4 or 8
+#SBATCH --partition=boost_usr_prod
+#SBATCH --qos=normal
 #SBATCH --array=1-{0}
 
-echo "Setting up bash environment"
 source ~/.bashrc
 set -x
 
-# Modules
-echo "Setting up modules"
-module purge
-module load anaconda3/2022.10/gcc-11.2.0
-module load cuda/11.8.0/gcc-11.2.0
+module load gcc/12.2.0-cuda-12.1
+module load python/3.10.8--gcc--11.3.0
 
-# Conda environment
-echo "Activate conda environment"
-source activate missing_multimod
+cd $HOME/workspace/Graph-Missing-Modalities
+
+source venv/bin/activate
 
 export LANG="en_US.utf8"
 export LANGUAGE="en_US:en"
-
-cd $HOME/workspace/Graph-Missing-Modalities
 
 echo "Run experiments"
 """
@@ -118,7 +117,7 @@ echo "Run experiments"
         for index, offset in enumerate(range(0, nb_jobs, args.batch_size_jobs), 1):
             offset_stop = min(offset + args.batch_size_jobs, nb_jobs)
             with open(scripts_path + f'/{args.dataset}/{args.model}/' + date_time + f'__{index}.sh', 'w') as f:
-                print(header.format(offset_stop - offset), file=f)
+                print(header.format(offset_stop - offset, args.account, args.mail_user), file=f)
                 current_command_lines = sorted_command_lines[offset: offset_stop]
                 for job_id, command_line in enumerate(current_command_lines, 1):
                     print(f'test $SLURM_ARRAY_TASK_ID -eq {job_id} && sleep 10 && {command_line}', file=f)

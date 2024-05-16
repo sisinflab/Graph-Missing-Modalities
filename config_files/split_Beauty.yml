@@ -12,7 +12,7 @@ experiment:
     validation_splitting:
       strategy: random_subsampling
       test_ratio: 0.1
-  dataset: Toys_Games
+  dataset: Beauty
   top_k: 20
   evaluation:
     cutoffs: [ 10, 20 ]
@@ -23,4 +23,4 @@ experiment:
     MostPop:
       meta:
         verbose: True
-        save_recs: True
+        save_recs: False

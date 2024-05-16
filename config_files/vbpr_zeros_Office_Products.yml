@@ -7,9 +7,9 @@ experiment:
     test_path: ../data/{0}/test_indexed.tsv
     side_information:
       - dataloader: VisualAttribute
-        visual_features: ../data/{0}/visual_embeddings_zeros_indexed
+        visual_features: ../data/{0}/visual_embeddings_zeros_complete_indexed
       - dataloader: TextualAttribute
-        textual_features: ../data/{0}/textual_embeddings_zeros_indexed
+        textual_features: ../data/{0}/textual_embeddings_zeros_complete_indexed
   dataset: Office_Products
   top_k: 20
   evaluation:

@@ -7,10 +7,10 @@ experiment:
     test_path: ../data/{0}/test_indexed.tsv
     side_information:
       - dataloader: VisualAttribute
-        visual_features: ../data/{0}/visual_embeddings_feat_prop_3_20_indexed
+        visual_features: ../data/{0}/visual_embeddings_random_complete_indexed
       - dataloader: TextualAttribute
-        textual_features: ../data/{0}/textual_embeddings_feat_prop_3_20_indexed
-  dataset: Office_Products
+        textual_features: ../data/{0}/textual_embeddings_random_complete_indexed
+  dataset: Toys_and_Games
   top_k: 20
   evaluation:
     cutoffs: [ 20 ]

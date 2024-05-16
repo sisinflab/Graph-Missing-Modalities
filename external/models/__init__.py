@@ -18,3 +18,5 @@ for _backend in sys.modules["external"].backend:
         from .vbpr.VBPR import VBPR
         from .lightgcn.LightGCN import LightGCN
         from .lightgcn_m.LightGCNM import LightGCNM
+        from .ngcf.NGCF import NGCF
+        from .ngcf_m.NGCFM import NGCFM

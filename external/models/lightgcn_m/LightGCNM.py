@@ -52,10 +52,19 @@ class LightGCNM(RecMixin, BaseRecommenderModel):
             self.__setattr__(f'''_side_{m}''',
                              self._data.side_information.__getattribute__(f'''{self._loaders[m_id]}'''))
 
-        all_multimodal_features = []
-        for m_id, m in enumerate(self._modalities):
-            all_multimodal_features.append(self.__getattribute__(
-                f'''_side_{self._modalities[m_id]}''').object.get_all_features())
+        if type(self._modalities) == list:
+            if self._aggregation == 'concat':
+                all_multimodal_features = self.__getattribute__(
+                    f'''_side_{self._modalities[0]}''').object.get_all_features()
+                for m in self._modalities[1:]:
+                    all_multimodal_features = np.concatenate((all_multimodal_features,
+                                                              self.__getattribute__(
+                                                                  f'''_side_{m}''').object.get_all_features()),
+                                                             axis=-1)
+            else:
+                raise NotImplementedError('This combination of multimodal features has not been implemented yet!')
+        else:
+            all_multimodal_features = self._side_visual.object.get_all_features()
 
         self._model = LightGCNMModel(
             num_users=self._num_users,
@@ -65,9 +74,7 @@ class LightGCNM(RecMixin, BaseRecommenderModel):
             l_w=self._l_w,
             n_layers=self._n_layers,
             adj=self.adj,
-            modalities=self._modalities,
             multimodal_features=all_multimodal_features,
-            aggregation=self._aggregation,
             normalize=self._normalize,
             random_seed=self._seed
         )
@@ -102,10 +109,10 @@ class LightGCNM(RecMixin, BaseRecommenderModel):
     def get_recommendations(self, k: int = 100):
         predictions_top_k_test = {}
         predictions_top_k_val = {}
-        gu, gi, fu, fi = self._model.propagate_embeddings(evaluate=True)
+        gu, gi = self._model.propagate_embeddings(evaluate=True)
         for index, offset in enumerate(range(0, self._num_users, self._batch_size)):
             offset_stop = min(offset + self._batch_size, self._num_users)
-            predictions = self._model.predict(gu[offset: offset_stop], gi, fu[offset: offset_stop], fi)
+            predictions = self._model.predict(gu[offset: offset_stop], gi, offset, offset_stop)
             recs_val, recs_test = self.process_protocol(k, predictions, offset, offset_stop)
             predictions_top_k_val.update(recs_val)
             predictions_top_k_test.update(recs_test)

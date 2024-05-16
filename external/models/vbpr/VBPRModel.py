@@ -49,7 +49,7 @@ class VBPRModel(torch.nn.Module, ABC):
 
         # multimodal
         self.Tu = torch.nn.Embedding(self.num_users, self.embed_k)
-        torch.nn.init.xavier_uniform_(self.Gu.weight)
+        torch.nn.init.xavier_uniform_(self.Tu.weight)
         self.Tu.to(self.device)
         self.F = torch.tensor(multimodal_features, dtype=torch.float32, device=self.device)
         self.F.to(self.device)

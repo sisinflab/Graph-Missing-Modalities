@@ -4,8 +4,8 @@ import shutil
 import argparse
 
 parser = argparse.ArgumentParser(description="Run sample main.")
-parser.add_argument('--dataset', type=str, default='Digital_Music')
-parser.add_argument('--model', type=str, default='vbpr')
+parser.add_argument('--dataset', type=str, default='Office_Products')
+parser.add_argument('--model', type=str, default='lightgcnm')
 parser.add_argument('--method', type=str, default='zeros')
 parser.add_argument('--layers', type=str, default='3')
 parser.add_argument('--top_k', type=str, default='20')
@@ -52,10 +52,10 @@ if args.method == 'feat_prop':
             validation_rate: 1
             validation_metric: Recall@20
             restore: False
-          lr: 0.005
+          lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
           factors: 64
           epochs: 200
-          l_w: 1e-2
+          l_w: [ 1e-5, 1e-2 ]
           modalities: ('visual', 'textual')
           loaders: ('VisualAttribute','TextualAttribute')
           batch_size: 1024
@@ -67,6 +67,108 @@ if args.method == 'feat_prop':
             monitor: Recall@20
             verbose: True
     """
+    elif args.model == 'ngcfm':
+        config = """experiment:
+      backend: pytorch
+      path_output_rec_result: ./results/{0}/folder/recs/
+      path_output_rec_weight: ./results/{0}/folder/weights/
+      path_output_rec_performance: ./results/{0}/folder/performance/
+      data_config:
+        strategy: fixed
+        train_path: ../data/{0}/train_indexed.tsv
+        validation_path: ../data/{0}/val_indexed.tsv
+        test_path: ../data/{0}/test_indexed.tsv
+        side_information:
+          - dataloader: VisualAttribute
+            visual_features: ../data/{0}/visual_embeddings_feat_prop_{1}_{2}_complete_indexed
+          - dataloader: TextualAttribute
+            textual_features: ../data/{0}/textual_embeddings_feat_prop_{1}_{2}_complete_indexed
+      dataset: dataset_name
+      top_k: 50
+      evaluation:
+        cutoffs: [10, 20, 50]
+        simple_metrics: [Recall, nDCG, Precision]
+      gpu: 0
+      external_models_path: ../external/models/__init__.py
+      models:
+        external.NGCFM:
+          meta:
+            hyper_opt_alg: grid
+            verbose: True
+            save_weights: False
+            save_recs: False
+            validation_rate: 1
+            validation_metric: Recall@20
+            restore: False
+          lr:  [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
+          epochs: 200
+          n_layers: 3
+          factors: 64
+          weight_size: 64
+          node_dropout: 0.1
+          message_dropout: 0.1
+          batch_size: 1024
+          modalities: ('visual', 'textual')
+          loaders: ('VisualAttribute','TextualAttribute')
+          normalize: True
+          l_w: [ 1e-5, 1e-2 ]
+          seed: 123
+          early_stopping:
+            patience: 5
+            mode: auto
+            monitor: Recall@20
+            verbose: True
+            """
+    elif args.model == 'lightgcnm':
+        config = """experiment:
+      backend: pytorch
+      path_output_rec_result: ./results/{0}/folder/recs/
+      path_output_rec_weight: ./results/{0}/folder/weights/
+      path_output_rec_performance: ./results/{0}/folder/performance/
+      data_config:
+        strategy: fixed
+        train_path: ../data/{0}/train_indexed.tsv
+        validation_path: ../data/{0}/val_indexed.tsv
+        test_path: ../data/{0}/test_indexed.tsv
+        side_information:
+          - dataloader: VisualAttribute
+            visual_features: ../data/{0}/visual_embeddings_feat_prop_{1}_{2}_complete_indexed
+          - dataloader: TextualAttribute
+            textual_features: ../data/{0}/textual_embeddings_feat_prop_{1}_{2}_complete_indexed
+      dataset: dataset_name
+      top_k: 50
+      evaluation:
+        cutoffs: [10, 20, 50]
+        simple_metrics: [Recall, nDCG, Precision]
+      gpu: 0
+      external_models_path: ../external/models/__init__.py
+      models:
+        external.LightGCNM:
+          meta:
+            hyper_opt_alg: grid
+            verbose: True
+            save_weights: False
+            save_recs: False
+            validation_rate: 1
+            validation_metric: Recall@20
+            restore: False
+          lr:  [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
+          epochs: 200
+          n_layers: 3
+          factors: 64
+          normalize: True
+          l_w: [ 1e-5, 1e-2 ]
+          modalities: ('visual', 'textual')
+          loaders: ('VisualAttribute','TextualAttribute')
+          batch_size: 1024
+          aggregation: concat
+          seed: 123
+          early_stopping:
+            patience: 5
+            mode: auto
+            monitor: Recall@20
+            verbose: True
+            """
     else:
         raise NotImplemented
 
@@ -126,5 +228,3 @@ else:
 
     shutil.rmtree(visual_folder_complete)
     shutil.rmtree(textual_folder_complete)
-
-    os.remove(f"config_files/{args.model}_{args.method}_{args.dataset}.yml")
