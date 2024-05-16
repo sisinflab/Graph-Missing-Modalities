@@ -8,14 +8,13 @@ import argparse
 from sklearn.model_selection import ParameterGrid
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='gowalla', help='choose the dataset')
+parser.add_argument('--dataset', type=str, default='Digital_Music', help='choose the dataset')
 parser.add_argument('--gpu_id', type=int, default=0, help='choose the gpu id')
 parser.add_argument('--batch_size_jobs', type=int, default=5, help='batch size for jobs')
 parser.add_argument('--cluster', type=str, default='cineca', help='cluster name')
 parser.add_argument('--mail_user', type=str, default='', help='your email')
 parser.add_argument('--account', type=str, default='', help='project name')
-
-args = parser.parse_args()
+parser.add_argument('--model', type=str, default='vbpr', help='project name')
 
 args = parser.parse_args()
 
