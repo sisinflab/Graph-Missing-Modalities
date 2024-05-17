@@ -22,6 +22,9 @@ if args.method == 'feat_prop':
     if args.model == 'vbpr':
         config = """experiment:
       backend: pytorch
+      path_output_rec_result: ./results/{0}/{1}_{2}/folder/recs/
+      path_output_rec_weight: ./results/{0}/{1}_{2}/folder/weights/
+      path_output_rec_performance: ./results/{0}/{1}_{2}/folder/performance/
       data_config:
         strategy: fixed
         train_path: ../data/{0}/train_indexed.tsv
@@ -67,6 +70,9 @@ if args.method == 'feat_prop':
     elif args.model == 'ngcfm':
         config = """experiment:
       backend: pytorch
+      path_output_rec_result: ./results/{0}/{1}_{2}/folder/recs/
+      path_output_rec_weight: ./results/{0}/{1}_{2}/folder/weights/
+      path_output_rec_performance: ./results/{0}/{1}_{2}/folder/performance/
       data_config:
         strategy: fixed
         train_path: ../data/{0}/train_indexed.tsv
@@ -116,6 +122,9 @@ if args.method == 'feat_prop':
     elif args.model == 'lightgcnm':
         config = """experiment:
       backend: pytorch
+      path_output_rec_result: ./results/{0}/{1}_{2}/folder/recs/
+      path_output_rec_weight: ./results/{0}/{1}_{2}/folder/weights/
+      path_output_rec_performance: ./results/{0}/{1}_{2}/folder/performance/
       data_config:
         strategy: fixed
         train_path: ../data/{0}/train_indexed.tsv
