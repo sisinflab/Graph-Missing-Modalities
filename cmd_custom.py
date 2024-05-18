@@ -61,10 +61,16 @@ def main():
                 completed = ('Best Model params' in content) and ('queue.Full' not in content)
 
         if not completed:
-            command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
-                            f'--dataset={args.dataset} '
-                            f'--method=feat_prop '
-                            f'--model={args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
+            if args.cluster == 'cineca':
+                command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
+                                f'--dataset={args.dataset} '
+                                f'--method=feat_prop '
+                                f'--model={args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
+            elif args.cluster == 'margaret':
+                command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 $HOME/.conda/envs/missing/bin/python run_multimodal.py {to_cmd(hyperparam)} '
+                                f'--dataset={args.dataset} '
+                                f'--method=feat_prop '
+                                f'--model={args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
             command_lines |= {command_line}
 
     # Sort command lines and remove duplicates
@@ -132,7 +138,7 @@ module load conda/4.9.2
 cd $HOME/projects/Graph-Missing-Modalities/
 
 # Conda environment
-source venv/bin/activate
+conda activate missing
 
 export LANG="en_US.utf8"
 export LANGUAGE="en_US:en"
