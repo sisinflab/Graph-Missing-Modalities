@@ -42,6 +42,8 @@ class NGCFMModel(torch.nn.Module, ABC):
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+        print(self.device)
+
         self.num_users = num_users
         self.num_items = num_items
         self.embed_k = embed_k
