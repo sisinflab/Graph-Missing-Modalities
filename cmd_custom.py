@@ -112,8 +112,8 @@ echo "Run experiments"
 """
     elif args.cluster == 'margaret':
         header = """#!/bin/bash -l
-#SBATCH --output=../../../../slogs/missing-%A_%a.out
-#SBATCH --error=../../../../slogs/missing-%A_%a.err
+#SBATCH --output=../../../../../slogs/missing-%A_%a.out
+#SBATCH --error=../../../../../slogs/missing-%A_%a.err
 #SBATCH --partition={1}
 #SBATCH --job-name=missing
 #SBATCH --gres=gpu:1
