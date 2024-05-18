@@ -57,7 +57,7 @@ def main():
         if os.path.isfile(f'{logs_path}/{args.dataset}/{args.model}/{logfile}'):
             with open(f'{logs_path}/{args.dataset}/{args.model}/{logfile}', 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
-                completed = 'Best Model params' in content
+                completed = ('Best Model params' in content) and ('queue.Full' not in content)
 
         if not completed:
             command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
