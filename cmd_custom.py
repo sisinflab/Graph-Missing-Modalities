@@ -15,6 +15,7 @@ parser.add_argument('--cluster', type=str, default='cineca', help='cluster name'
 parser.add_argument('--mail_user', type=str, default='', help='your email')
 parser.add_argument('--account', type=str, default='', help='project name')
 parser.add_argument('--model', type=str, default='vbpr', help='project name')
+parser.add_argument('--partition', type=str, default='', help='partition name')
 
 args = parser.parse_args()
 
@@ -109,6 +110,33 @@ export LANGUAGE="en_US:en"
 
 echo "Run experiments"
 """
+    elif args.cluster == 'margaret':
+        header = """#!/bin/bash -l
+#SBATCH --output=../../../../slogs/missing-%A_%a.out
+#SBATCH --error=../../../../slogs/missing-%A_%a.err
+#SBATCH --partition={1}
+#SBATCH --job-name=missing
+#SBATCH --gres=gpu:1
+#SBATCH --mem=20GB # memory in Mb
+#SBATCH --cpus-per-task=4 # number of cpus to use - there are 32 on each node.
+#SBATCH --time=8:00:00 # time requested in days-hours:minutes:seconds
+#SBATCH --array=1-{0}
+
+echo "Setting up bash environment"
+source ~/.bashrc
+set -x
+
+# Modules
+module load conda/4.9.2
+
+cd $HOME/projects/Graph-Missing-Modalities/
+
+# Conda environment
+source venv/bin/activate
+
+export LANG="en_US.utf8"
+export LANGUAGE="en_US:en"
+"""
 
     date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
 
@@ -116,7 +144,10 @@ echo "Run experiments"
         for index, offset in enumerate(range(0, nb_jobs, args.batch_size_jobs), 1):
             offset_stop = min(offset + args.batch_size_jobs, nb_jobs)
             with open(scripts_path + f'/{args.dataset}/{args.model}/' + date_time + f'__{index}.sh', 'w') as f:
-                print(header.format(offset_stop - offset, args.account, args.mail_user), file=f)
+                if args.cluster == 'cineca':
+                    print(header.format(offset_stop - offset, args.account, args.mail_user), file=f)
+                elif args.cluster == 'margaret':
+                    print(header.format(offset_stop - offset, args.partition), file=f)
                 current_command_lines = sorted_command_lines[offset: offset_stop]
                 for job_id, command_line in enumerate(current_command_lines, 1):
                     print(f'test $SLURM_ARRAY_TASK_ID -eq {job_id} && sleep 10 && {command_line}', file=f)
