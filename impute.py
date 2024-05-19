@@ -10,6 +10,22 @@ import scipy.sparse as sp
 np.random.seed(42)
 
 
+def get_item_item():
+    # compute item_item matrix
+    user_item = sp.coo_matrix(([1.0] * len(train), (train[0].tolist(), train[1].tolist())),
+                              shape=(train[0].nunique(), num_items_visual), dtype=np.float32)
+    item_item = user_item.transpose().dot(user_item).toarray()
+    knn_val, knn_ind = torch.topk(torch.tensor(item_item, device=device), args.top_k, dim=-1)
+    items_cols = torch.flatten(knn_ind).to(device)
+    ir = torch.tensor(list(range(item_item.shape[0])), dtype=torch.int64, device=device)
+    items_rows = torch.repeat_interleave(ir, args.top_k).to(device)
+    final_adj = SparseTensor(row=items_rows,
+                             col=items_cols,
+                             value=torch.tensor([1.0] * items_rows.shape[0], device=device),
+                             sparse_sizes=(item_item.shape[0], item_item.shape[0]))
+    return final_adj
+
+
 def compute_normalized_laplacian(adj, norm):
     adj = fill_diag(adj, 0.)
     deg = sum(adj, dim=-1)
@@ -19,11 +35,12 @@ def compute_normalized_laplacian(adj, norm):
     adj_t = mul(adj_t, deg_inv_sqrt.view(1, -1))
     return adj_t
 
+
 parser = argparse.ArgumentParser(description="Run imputation.")
 parser.add_argument('--data', type=str, default='Office_Products')
 parser.add_argument('--gpu', type=str, default='0')
 parser.add_argument('--layers', type=int, default=3)
-parser.add_argument('--method', type=str, default='random')
+parser.add_argument('--method', type=str, default='neigh_mean')
 parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
 
@@ -50,7 +67,7 @@ except pd.errors.EmptyDataError:
 visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
 textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
 
-if args.method == 'feat_prop':
+if args.method in ['neigh_mean', 'feat_prop']:
     if not os.path.exists(output_visual + f'_{args.layers}_{args.top_k}_indexed'):
         os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_indexed')
     if not os.path.exists(output_textual + f'_{args.layers}_{args.top_k}_indexed'):
@@ -98,6 +115,59 @@ elif args.method == 'mean':
         for miss in missing_textual:
             np.save(os.path.join(output_textual, f'{miss}.npy'), mean_textual)
 
+elif args.method == 'neigh_mean':
+    visual_folder = f'data/{args.data}/visual_embeddings_indexed'
+    textual_folder = f'data/{args.data}/textual_embeddings_indexed'
+
+    output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+    output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+
+    try:
+        train = pd.read_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', header=None)
+    except FileNotFoundError:
+        print('Before imputing through neigh_mean, split the dataset into train/val/test!')
+        exit()
+
+    num_items_visual = len(missing_visual) + len(os.listdir(visual_folder))
+    num_items_textual = len(missing_textual) + len(os.listdir(textual_folder))
+
+    visual_features = torch.zeros((num_items_visual, visual_shape[-1]), device=device)
+    textual_features = torch.zeros((num_items_textual, textual_shape[-1]), device=device)
+
+    adj = get_item_item()
+
+    try:
+        missing_visual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_visual_indexed.tsv'), sep='\t',
+                                             header=None)
+        missing_visual_indexed = set(missing_visual_indexed[0].tolist())
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        missing_visual_indexed = set()
+
+    try:
+        missing_textual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_textual_indexed.tsv'),
+                                              sep='\t', header=None)
+        missing_textual_indexed = set(missing_textual_indexed[0].tolist())
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        missing_textual_indexed = set()
+
+    for f in os.listdir(f'data/{args.data}/visual_embeddings_indexed'):
+        visual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/visual_embeddings_indexed', f)))
+
+    for miss in missing_visual_indexed:
+        first_hop = adj[miss].storage._col
+        mean_ = visual_features[first_hop].mean(axis=0, keepdims=True)
+        np.save(os.path.join(output_visual, f'{miss}.npy'), mean_.detach().cpu().numpy())
+
+    for f in os.listdir(f'data/{args.data}/textual_embeddings_indexed'):
+        textual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/textual_embeddings_indexed', f)))
+
+    for miss in missing_textual_indexed:
+        first_hop = adj[miss].storage._col
+        mean_ = textual_features[first_hop].mean(axis=0, keepdims=True)
+        np.save(os.path.join(output_textual, f'{miss}.npy'), mean_.detach().cpu().numpy())
+
 elif args.method == 'feat_prop':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'
     textual_folder = f'data/{args.data}/textual_embeddings_indexed'
@@ -117,36 +187,29 @@ elif args.method == 'feat_prop':
     visual_features = torch.zeros((num_items_visual, visual_shape[-1]))
     textual_features = torch.zeros((num_items_textual, textual_shape[-1]))
 
-    # compute item_item matrix
-    user_item = sp.coo_matrix(([1.0]*len(train), (train[0].tolist(), train[1].tolist())),
-                              shape=(train[0].nunique(), num_items_visual), dtype=np.float32)
-    item_item = user_item.transpose().dot(user_item).toarray()
-    knn_val, knn_ind = torch.topk(torch.tensor(item_item, device=device), args.top_k, dim=-1)
-    items_cols = torch.flatten(knn_ind).to(device)
-    ir = torch.tensor(list(range(item_item.shape[0])), dtype=torch.int64, device=device)
-    items_rows = torch.repeat_interleave(ir, args.top_k).to(device)
-    adj = SparseTensor(row=items_rows,
-                       col=items_cols,
-                       value=torch.tensor([1.0] * items_rows.shape[0], device=device),
-                       sparse_sizes=(item_item.shape[0], item_item.shape[0]))
+    adj = get_item_item()
+
     # normalize adjacency matrix
     adj = compute_normalized_laplacian(adj, 0.5)
 
     try:
-        missing_visual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_visual_indexed.tsv'), sep='\t', header=None)
+        missing_visual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_visual_indexed.tsv'), sep='\t',
+                                             header=None)
         missing_visual_indexed = set(missing_visual_indexed[0].tolist())
     except (pd.errors.EmptyDataError, FileNotFoundError):
         missing_visual_indexed = set()
 
     try:
-        missing_textual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_textual_indexed.tsv'), sep='\t', header=None)
+        missing_textual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_textual_indexed.tsv'),
+                                              sep='\t', header=None)
         missing_textual_indexed = set(missing_textual_indexed[0].tolist())
     except (pd.errors.EmptyDataError, FileNotFoundError):
         missing_textual_indexed = set()
 
     # feat prop on visual features
     for f in os.listdir(f'data/{args.data}/visual_embeddings_indexed'):
-        visual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(np.load(os.path.join(f'data/{args.data}/visual_embeddings_indexed', f)))
+        visual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/visual_embeddings_indexed', f)))
 
     non_missing_items = list(set(list(range(num_items_visual))).difference(missing_visual_indexed))
     propagated_visual_features = visual_features.clone()
@@ -161,7 +224,8 @@ elif args.method == 'feat_prop':
 
     # feat prop on textual features
     for f in os.listdir(f'data/{args.data}/textual_embeddings_indexed'):
-        textual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(np.load(os.path.join(f'data/{args.data}/textual_embeddings_indexed', f)))
+        textual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/textual_embeddings_indexed', f)))
 
     non_missing_items = list(set(list(range(num_items_textual))).difference(missing_textual_indexed))
     propagated_textual_features = textual_features.clone()
