@@ -7,9 +7,10 @@ parser.add_argument('--dataset', type=str, default='Digital_Music')
 parser.add_argument('--num_layers', type=int, default=20)
 parser.add_argument('--num_top_k', type=int, default=10)
 parser.add_argument('--metric', type=str, default='Recall')
+parser.add_argument('--model', type=str, default='vbpr')
 args = parser.parse_args()
 
-file_path = f"feat_prop_{args.dataset}_collected.out"
+file_path = f"feat_prop_{args.dataset}_{args.model}_collected.out"
 best_model_results = np.empty((args.num_layers * args.num_top_k, 1))
 
 with open(file_path, 'r') as file:
@@ -27,4 +28,4 @@ for t in range(args.num_top_k):
 
 print(f'Best {args.metric} overall: {best_model_results.max()}')
 
-np.save(f'feat_prop_{args.dataset}_{args.metric}.npy', best_model_results)
+np.save(f'feat_prop_{args.dataset}_{args.model}_{args.metric}.npy', best_model_results)
