@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import shutil
 import torch
-from torch_sparse import SparseTensor, mul, sum, fill_diag, matmul
+from torch_sparse import SparseTensor, mul, sum, fill_diag, matmul, eye, mul_nnz
 import scipy.sparse as sp
 
 np.random.seed(42)
@@ -26,8 +26,8 @@ def get_item_item():
     return final_adj
 
 
-def compute_normalized_laplacian(adj, norm):
-    adj = fill_diag(adj, 0.)
+def compute_normalized_laplacian(adj, norm, fill_value=0.):
+    adj = fill_diag(adj, fill_value=fill_value)
     deg = sum(adj, dim=-1)
     deg_inv_sqrt = deg.pow_(-norm)
     deg_inv_sqrt.masked_fill_(deg_inv_sqrt == float('inf'), 0.)
@@ -40,7 +40,8 @@ parser = argparse.ArgumentParser(description="Run imputation.")
 parser.add_argument('--data', type=str, default='Office_Products')
 parser.add_argument('--gpu', type=str, default='0')
 parser.add_argument('--layers', type=int, default=3)
-parser.add_argument('--method', type=str, default='neigh_mean')
+parser.add_argument('--method', type=str, default='pers_page_rank')
+parser.add_argument('--alpha', type=float, default=0.1)
 parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
 
@@ -72,6 +73,11 @@ if args.method in ['neigh_mean', 'feat_prop']:
         os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_indexed')
     if not os.path.exists(output_textual + f'_{args.layers}_{args.top_k}_indexed'):
         os.makedirs(output_textual + f'_{args.layers}_{args.top_k}_indexed')
+elif args.method == 'pers_page_rank':
+    if not os.path.exists(output_visual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed'):
+        os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed')
+    if not os.path.exists(output_textual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed'):
+        os.makedirs(output_textual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed')
 else:
     if not os.path.exists(output_visual):
         os.makedirs(output_visual)
@@ -119,8 +125,8 @@ elif args.method == 'neigh_mean':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'
     textual_folder = f'data/{args.data}/textual_embeddings_indexed'
 
-    output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
-    output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+    output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.top_k}_indexed'
+    output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.top_k}_indexed'
 
     try:
         train = pd.read_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', header=None)
@@ -167,6 +173,38 @@ elif args.method == 'neigh_mean':
         first_hop = adj[miss].storage._col
         mean_ = textual_features[first_hop].mean(axis=0, keepdims=True)
         np.save(os.path.join(output_textual, f'{miss}.npy'), mean_.detach().cpu().numpy())
+
+elif args.method == 'pers_page_rank':
+    visual_folder = f'data/{args.data}/visual_embeddings_indexed'
+    textual_folder = f'data/{args.data}/textual_embeddings_indexed'
+
+    output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.alpha}_indexed'
+    output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.alpha}_indexed'
+
+    try:
+        train = pd.read_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', header=None)
+    except FileNotFoundError:
+        print('Before imputing through feat_prop, split the dataset into train/val/test!')
+        exit()
+
+    num_items_visual = len(missing_visual) + len(os.listdir(visual_folder))
+    num_items_textual = len(missing_textual) + len(os.listdir(textual_folder))
+
+    visual_features = torch.zeros((num_items_visual, visual_shape[-1]))
+    textual_features = torch.zeros((num_items_textual, textual_shape[-1]))
+
+    adj = get_item_item()
+
+    adj = sp.coo_matrix((adj.storage._value.cpu().numpy(), (adj.storage._row.cpu().numpy(), adj.storage._col.cpu().numpy())), shape=(num_items_visual, num_items_visual))
+
+    num_nodes = num_items_visual
+    A_tilde = adj + np.eye(num_nodes)
+    D_tilde = 1 / np.sqrt(A_tilde.sum(axis=1))
+    D_ = np.zeros((num_items_visual, num_items_visual))
+    np.fill_diagonal(D_, D_tilde[0, 0])
+    H = D_ @ A_tilde @ D_
+    adj = args.alpha * np.linalg.inv(np.eye(num_items_visual) - (1 - args.alpha) * H)
+    print()
 
 elif args.method == 'feat_prop':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'

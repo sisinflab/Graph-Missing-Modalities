@@ -11,7 +11,7 @@ experiment:
         visual_features: ../data/{0}/visual_embeddings_mean_complete_indexed
       - dataloader: TextualAttribute
         textual_features: ../data/{0}/textual_embeddings_mean_complete_indexed
-  dataset: Toys_and_Games
+  dataset: Beauty
   top_k: 20
   evaluation:
     cutoffs: [ 20 ]
