@@ -20,3 +20,4 @@ for _backend in sys.modules["external"].backend:
         from .lightgcn_m.LightGCNM import LightGCNM
         from .ngcf.NGCF import NGCF
         from .ngcf_m.NGCFM import NGCFM
+        from .bm3.BM3 import BM3
