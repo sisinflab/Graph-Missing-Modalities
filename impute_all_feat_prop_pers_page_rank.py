@@ -3,6 +3,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='Baby', help='choose the dataset')
+parser.add_argument('--method', type=str, default='pers_page_rank', help='choose the method')
 parser.add_argument('--gpu_id', type=int, default=0, help='choose gpu id')
 args = parser.parse_args()
 
@@ -19,7 +20,7 @@ for hyp in hyperparams:
              f"--gpu {args.gpu_id} "
              f"--layers {hyp['--layers']} "
              f"--top_k {hyp['--top_k']} "
-             f"--method feat_prop\n")
+             f"--method {args.method}\n")
 
-with open(f"impute_all_feat_prop_{args.dataset}.sh", 'w') as f:
+with open(f"impute_all_{args.method}_{args.dataset}.sh", 'w') as f:
     f.write(bash)
