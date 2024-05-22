@@ -66,11 +66,16 @@ except pd.errors.EmptyDataError:
     missing_textual = set()
 
 
-if args.method in ['neigh_mean', 'feat_prop']:
+if args.method == 'feat_prop':
     if not os.path.exists(output_visual + f'_{args.layers}_{args.top_k}_indexed'):
         os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_indexed')
     if not os.path.exists(output_textual + f'_{args.layers}_{args.top_k}_indexed'):
         os.makedirs(output_textual + f'_{args.layers}_{args.top_k}_indexed')
+elif args.method == 'neigh_mean':
+    if not os.path.exists(output_visual + f'_{args.top_k}_indexed'):
+        os.makedirs(output_visual + f'_{args.top_k}_indexed')
+    if not os.path.exists(output_textual + f'_{args.top_k}_indexed'):
+        os.makedirs(output_textual + f'_{args.top_k}_indexed')
 elif args.method == 'pers_page_rank':
     if not os.path.exists(output_visual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed'):
         os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed')
