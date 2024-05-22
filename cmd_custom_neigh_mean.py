@@ -70,6 +70,12 @@ def main():
                                 f'--dataset={args.dataset} '
                                 f'--method=neigh_mean '
                                 f'--model={args.model} > {logs_path}/{args.dataset}/mean_neigh/{args.model}/{logfile} 2>&1')
+            elif args.cluster == 'mesocentre':
+                command_line = (
+                    f'CUBLAS_WORKSPACE_CONFIG=:4096:8 $HOME/.conda/envs/missing_multimod/bin/python run_multimodal.py {to_cmd(hyperparam)} '
+                    f'--dataset={args.dataset} '
+                    f'--method=neigh_mean '
+                    f'--model={args.model} > {logs_path}/{args.dataset}/mean_neigh/{args.model}/{logfile} 2>&1')
             command_lines |= {command_line}
 
     # Sort command lines and remove duplicates
@@ -145,10 +151,10 @@ export LANGUAGE="en_US:en"
     elif args.cluster == 'mesocentre':
         header = """#!/bin/bash -l
 
-#SBATCH --output=/workdir/%u/slogs/diffrec-%A_%a.out
-#SBATCH --error=/workdir/%u/slogs/diffrec-%A_%a.err
+#SBATCH --output=/workdir/%u/slogs/missing-%A_%a.out
+#SBATCH --error=/workdir/%u/slogs/missing-%A_%a.err
 #SBATCH --partition={1}
-#SBATCH --job-name=diffrec
+#SBATCH --job-name=missing
 #SBATCH --gres=gpu:1
 #SBATCH --mem=20GB # memory in Mb
 #SBATCH --cpus-per-task=4 # number of cpus to use - there are 32 on each node.
@@ -165,12 +171,12 @@ module load anaconda3/2022.10/gcc-11.2.0
 module load cuda/11.8.0/gcc-11.2.0
 
 # Conda environment
-source activate diffrec
+source activate missing_multimod
 
 export LANG="en_US.utf8"
 export LANGUAGE="en_US:en"
 
-cd $HOME/workspace/FairDiffRec/DiffRec
+cd $HOME/workspace/Graph-Missing-Modalities
 
 """
 
@@ -182,7 +188,7 @@ cd $HOME/workspace/FairDiffRec/DiffRec
             with open(scripts_path + f'/{args.dataset}/mean_neigh/{args.model}/' + date_time + f'__{index}.sh', 'w') as f:
                 if args.cluster == 'cineca':
                     print(header.format(offset_stop - offset, args.account, args.mail_user), file=f)
-                elif args.cluster == 'margaret':
+                elif args.cluster in ['margaret', 'mesocentre']:
                     print(header.format(offset_stop - offset, args.partition), file=f)
                 current_command_lines = sorted_command_lines[offset: offset_stop]
                 for job_id, command_line in enumerate(current_command_lines, 1):
