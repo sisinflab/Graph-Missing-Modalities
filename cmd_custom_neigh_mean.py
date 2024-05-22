@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='Digital_Music', help='choose the dataset')
 parser.add_argument('--gpu_id', type=int, default=0, help='choose the gpu id')
 parser.add_argument('--batch_size_jobs', type=int, default=5, help='batch size for jobs')
-parser.add_argument('--cluster', type=str, default='cineca', help='cluster name')
+parser.add_argument('--cluster', type=str, default='', help='cluster name')
 parser.add_argument('--mail_user', type=str, default='', help='your email')
 parser.add_argument('--account', type=str, default='', help='project name')
 parser.add_argument('--model', type=str, default='vbpr', help='project name')
@@ -43,10 +43,10 @@ def main():
     logs_path = 'logs'
     scripts_path = 'scripts'
 
-    if not os.path.exists(logs_path + f'/{args.dataset}/mean_neigh/{args.model}/'):
+    if not os.path.exists(logs_path + f'/{args.dataset}/mean_neigh/{args.model}/') and args.cluster:
         os.makedirs(logs_path + f'/{args.dataset}/mean_neigh/{args.model}/')
 
-    if not os.path.exists(scripts_path + f'/{args.dataset}/mean_neigh/{args.model}/'):
+    if not os.path.exists(scripts_path + f'/{args.dataset}/mean_neigh/{args.model}/') and args.cluster:
         os.makedirs(scripts_path + f'/{args.dataset}/mean_neigh/{args.model}/')
 
     command_lines = set()
@@ -76,6 +76,12 @@ def main():
                     f'--dataset={args.dataset} '
                     f'--method=neigh_mean '
                     f'--model={args.model} > {logs_path}/{args.dataset}/mean_neigh/{args.model}/{logfile} 2>&1')
+            elif args.cluster == '':
+                command_line = (
+                    f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
+                    f'--dataset={args.dataset} '
+                    f'--method=neigh_mean '
+                    f'--model={args.model}')
             command_lines |= {command_line}
 
     # Sort command lines and remove duplicates
@@ -89,6 +95,8 @@ def main():
 
     if args.batch_size_jobs == -1:
         args.batch_size_jobs = nb_jobs
+
+    header = None
 
     if args.cluster == 'cineca':
         header = """#!/bin/bash -l
@@ -193,6 +201,11 @@ cd $HOME/workspace/Graph-Missing-Modalities
                 current_command_lines = sorted_command_lines[offset: offset_stop]
                 for job_id, command_line in enumerate(current_command_lines, 1):
                     print(f'test $SLURM_ARRAY_TASK_ID -eq {job_id} && sleep 10 && {command_line}', file=f)
+    else:
+        with open(f'run_multimodal_all_neigh_mean_{args.dataset}.sh', 'w') as f:
+            print(f'#!/bin/bash', file=f)
+            for command_line in sorted_command_lines:
+                print(f'{command_line}', file=f)
 
 
 if __name__ == '__main__':
