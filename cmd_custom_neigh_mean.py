@@ -43,19 +43,19 @@ def main():
     logs_path = 'logs'
     scripts_path = 'scripts'
 
-    if not os.path.exists(logs_path + f'/{args.dataset}/{args.model}/'):
-        os.makedirs(logs_path + f'/{args.dataset}/{args.model}/')
+    if not os.path.exists(logs_path + f'/{args.dataset}/mean_neigh/{args.model}/'):
+        os.makedirs(logs_path + f'/{args.dataset}/mean_neigh/{args.model}/')
 
-    if not os.path.exists(scripts_path + f'/{args.dataset}/{args.model}/'):
-        os.makedirs(scripts_path + f'/{args.dataset}/{args.model}/')
+    if not os.path.exists(scripts_path + f'/{args.dataset}/mean_neigh/{args.model}/'):
+        os.makedirs(scripts_path + f'/{args.dataset}/mean_neigh/{args.model}/')
 
     command_lines = set()
 
     for hyperparam in hyperparams:
         logfile = to_logfile(hyperparam)
         completed = False
-        if os.path.isfile(f'{logs_path}/{args.dataset}/{args.model}/{logfile}'):
-            with open(f'{logs_path}/{args.dataset}/{args.model}/{logfile}', 'r', encoding='utf-8', errors='ignore') as f:
+        if os.path.isfile(f'{logs_path}/{args.dataset}/mean_neigh/{args.model}/{logfile}'):
+            with open(f'{logs_path}/{args.dataset}/mean_neigh/{args.model}/{logfile}', 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
                 completed = ('Best Model params' in content) and ('queue.Full' not in content)
 
@@ -64,12 +64,12 @@ def main():
                 command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
                                 f'--dataset={args.dataset} '
                                 f'--method=neigh_mean '
-                                f'--model={args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
+                                f'--model={args.model} > {logs_path}/{args.dataset}/mean_neigh/{args.model}/{logfile} 2>&1')
             elif args.cluster == 'margaret':
                 command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 $HOME/.conda/envs/missing/bin/python run_multimodal.py {to_cmd(hyperparam)} '
                                 f'--dataset={args.dataset} '
                                 f'--method=neigh_mean '
-                                f'--model={args.model} > {logs_path}/{args.dataset}/{args.model}/{logfile} 2>&1')
+                                f'--model={args.model} > {logs_path}/{args.dataset}/mean_neigh/{args.model}/{logfile} 2>&1')
             command_lines |= {command_line}
 
     # Sort command lines and remove duplicates
@@ -142,13 +142,44 @@ conda activate missing
 export LANG="en_US.utf8"
 export LANGUAGE="en_US:en"
 """
+    elif args.cluster == 'mesocentre':
+        header = """#!/bin/bash -l
+
+#SBATCH --output=/workdir/%u/slogs/diffrec-%A_%a.out
+#SBATCH --error=/workdir/%u/slogs/diffrec-%A_%a.err
+#SBATCH --partition={1}
+#SBATCH --job-name=diffrec
+#SBATCH --gres=gpu:1
+#SBATCH --mem=20GB # memory in Mb
+#SBATCH --cpus-per-task=4 # number of cpus to use - there are 32 on each node.
+#SBATCH --time=8:00:00 # time requested in days-hours:minutes:seconds
+#SBATCH --array=1-{0}
+
+echo "Setting up bash environment"
+source ~/.bashrc
+set -x
+
+# Modules
+module purge
+module load anaconda3/2022.10/gcc-11.2.0
+module load cuda/11.8.0/gcc-11.2.0
+
+# Conda environment
+source activate diffrec
+
+export LANG="en_US.utf8"
+export LANGUAGE="en_US:en"
+
+cd $HOME/workspace/FairDiffRec/DiffRec
+
+"""
 
     date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
 
     if header:
         for index, offset in enumerate(range(0, nb_jobs, args.batch_size_jobs), 1):
             offset_stop = min(offset + args.batch_size_jobs, nb_jobs)
-            with open(scripts_path + f'/{args.dataset}/{args.model}/' + date_time + f'__{index}.sh', 'w') as f:
+            with open(scripts_path + f'/{args.dataset}/mean_neigh/{args.model}/' + date_time + f'__{index}.sh', 'w') as f:
                 if args.cluster == 'cineca':
                     print(header.format(offset_stop - offset, args.account, args.mail_user), file=f)
                 elif args.cluster == 'margaret':
