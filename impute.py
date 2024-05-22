@@ -65,8 +65,6 @@ try:
 except pd.errors.EmptyDataError:
     missing_textual = set()
 
-visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
-textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
 
 if args.method in ['neigh_mean', 'feat_prop']:
     if not os.path.exists(output_visual + f'_{args.layers}_{args.top_k}_indexed'):
@@ -85,6 +83,8 @@ else:
         os.makedirs(output_textual)
 
 if args.method == 'zeros':
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
     for miss in missing_visual:
         np.save(os.path.join(output_visual, f'{miss}.npy'), np.zeros(visual_shape, dtype=np.float32))
 
@@ -92,6 +92,8 @@ if args.method == 'zeros':
         np.save(os.path.join(output_textual, f'{miss}.npy'), np.zeros(textual_shape, dtype=np.float32))
 
 elif args.method == 'random':
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
     for miss in missing_visual:
         np.save(os.path.join(output_visual, f'{miss}.npy'), np.random.rand(*visual_shape))
 
@@ -99,6 +101,8 @@ elif args.method == 'random':
         np.save(os.path.join(output_textual, f'{miss}.npy'), np.random.rand(*textual_shape))
 
 elif args.method == 'mean':
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
     num_items_visual = len(os.listdir(visual_folder))
     num_items_textual = len(os.listdir(textual_folder))
 
@@ -124,6 +128,9 @@ elif args.method == 'mean':
 elif args.method == 'neigh_mean':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'
     textual_folder = f'data/{args.data}/textual_embeddings_indexed'
+
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
 
     output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.top_k}_indexed'
     output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.top_k}_indexed'
@@ -178,6 +185,9 @@ elif args.method == 'pers_page_rank':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'
     textual_folder = f'data/{args.data}/textual_embeddings_indexed'
 
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
+
     output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.alpha}_indexed'
     output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.alpha}_indexed'
 
@@ -209,6 +219,9 @@ elif args.method == 'pers_page_rank':
 elif args.method == 'feat_prop':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'
     textual_folder = f'data/{args.data}/textual_embeddings_indexed'
+
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
 
     output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
     output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
