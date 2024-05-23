@@ -1,7 +1,6 @@
 Cython
 hyperopt==0.2.5
 numpy
-tensorflow
 tqdm
 scipy
 pandas
