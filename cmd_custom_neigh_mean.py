@@ -104,8 +104,8 @@ def main():
 #SBATCH --time=24:00:00                                   ## format: HH:MM:SS
 #SBATCH --nodes=1
 #SBATCH --mem=20GB                                       ## memory per node out of 494000MB (481GB)
-#SBATCH --output=../../../../../slogs/SisInf_Missing_Multimod_output-%A_%a.out
-#SBATCH --error=../../../../../slogs/SisInf_Missing_Multimod_error-%A_%a.err
+#SBATCH --output=../../../../../../slogs/SisInf_Missing_Multimod_output-%A_%a.out
+#SBATCH --error=../../../../../../slogs/SisInf_Missing_Multimod_error-%A_%a.err
 #SBATCH --account={1}
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user={2}
@@ -131,8 +131,8 @@ echo "Run experiments"
 """
     elif args.cluster == 'margaret':
         header = """#!/bin/bash -l
-#SBATCH --output=../../../../../slogs/missing-%A_%a.out
-#SBATCH --error=../../../../../slogs/missing-%A_%a.err
+#SBATCH --output=../../../../../../slogs/missing-%A_%a.out
+#SBATCH --error=../../../../../../slogs/missing-%A_%a.err
 #SBATCH --partition={1}
 #SBATCH --job-name=missing
 #SBATCH --gres=gpu:1
