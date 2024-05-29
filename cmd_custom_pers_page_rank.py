@@ -65,12 +65,12 @@ def main():
             if args.cluster == 'cineca':
                 command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
                                 f'--dataset={args.dataset} '
-                                f'--method=feat_prop '
+                                f'--method=pers_page_rank '
                                 f'--model={args.model} > {logs_path}/{args.dataset}/pers_page_rank/{args.model}/{logfile} 2>&1')
             elif args.cluster == 'margaret':
                 command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 $HOME/.conda/envs/missing/bin/python run_multimodal.py {to_cmd(hyperparam)} '
                                 f'--dataset={args.dataset} '
-                                f'--method=feat_prop '
+                                f'--method=pers_page_rank '
                                 f'--model={args.model} > {logs_path}/{args.dataset}/pers_page_rank/{args.model}/{logfile} 2>&1')
             command_lines |= {command_line}
 
