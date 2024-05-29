@@ -574,7 +574,7 @@ elif args.method == 'pers_page_rank':
     else:
         raise NotImplemented
 
-    with open(f'./config_files/{args.model}_feat_prop_{args.layers}_{args.top_k}_{args.a}_{args.dataset}.yml', 'w') as f:
+    with open(f'./config_files/{args.model}_pers_page_rank_{args.layers}_{args.top_k}_{args.a}_{args.dataset}.yml', 'w') as f:
         f.write(config.format(args.dataset).replace('dataset_name', args.dataset))
 
     visual_folder_imputed_indexed = f'./data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_indexed'
