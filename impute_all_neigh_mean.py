@@ -13,7 +13,7 @@ hyperparams = ParameterGrid({
 bash = "#!/bin/bash\n"
 
 for hyp in hyperparams:
-    bash += (f"$HOME/.conda/envs/missing_multimod/bin/python impute.py "
+    bash += (f"python impute.py "
              f"--data {args.dataset} "
              f"--gpu {args.gpu_id} "
              f"--top_k {hyp['--top_k']} "

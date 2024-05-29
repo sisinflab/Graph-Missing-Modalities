@@ -2,7 +2,7 @@ from sklearn.model_selection import ParameterGrid
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='Baby', help='choose the dataset')
+parser.add_argument('--dataset', type=str, default='Office_Products', help='choose the dataset')
 parser.add_argument('--method', type=str, default='pers_page_rank', help='choose the method')
 parser.add_argument('--gpu_id', type=int, default=0, help='choose gpu id')
 args = parser.parse_args()

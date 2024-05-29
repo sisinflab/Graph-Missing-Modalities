@@ -39,8 +39,8 @@ def compute_normalized_laplacian(adj, norm, fill_value=0.):
 parser = argparse.ArgumentParser(description="Run imputation.")
 parser.add_argument('--data', type=str, default='Office_Products')
 parser.add_argument('--gpu', type=str, default='0')
-parser.add_argument('--layers', type=int, default=3)
-parser.add_argument('--method', type=str, default='pers_page_rank')
+parser.add_argument('--layers', type=int, default=1)
+parser.add_argument('--method', type=str, default='feat_prop')
 parser.add_argument('--alpha', type=float, default=0.1)
 parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
@@ -205,8 +205,8 @@ elif args.method == 'pers_page_rank':
     num_items_visual = len(missing_visual) + len(os.listdir(visual_folder))
     num_items_textual = len(missing_textual) + len(os.listdir(textual_folder))
 
-    visual_features = torch.zeros((num_items_visual, visual_shape[-1]))
-    textual_features = torch.zeros((num_items_textual, textual_shape[-1]))
+    visual_features = np.zeros((num_items_visual, visual_shape[-1]))
+    textual_features = np.zeros((num_items_textual, textual_shape[-1]))
 
     adj = get_item_item()
 
@@ -219,7 +219,57 @@ elif args.method == 'pers_page_rank':
     np.fill_diagonal(D_, D_tilde[0, 0])
     H = D_ @ A_tilde @ D_
     adj = args.alpha * np.linalg.inv(np.eye(num_items_visual) - (1 - args.alpha) * H)
-    print()
+    row_idx = np.arange(num_nodes)
+    adj[adj.argsort(axis=0)[:num_nodes - args.top_k], row_idx] = 0.
+    norm = adj.sum(axis=0)
+    norm[norm <= 0] = 1
+    adj = adj / norm
+
+    try:
+        missing_visual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_visual_indexed.tsv'), sep='\t',
+                                             header=None)
+        missing_visual_indexed = set(missing_visual_indexed[0].tolist())
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        missing_visual_indexed = set()
+
+    try:
+        missing_textual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_textual_indexed.tsv'),
+                                              sep='\t', header=None)
+        missing_textual_indexed = set(missing_textual_indexed[0].tolist())
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        missing_textual_indexed = set()
+
+    # feat prop on visual features
+    for f in os.listdir(f'data/{args.data}/visual_embeddings_indexed'):
+        visual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/visual_embeddings_indexed', f)))
+
+    non_missing_items = list(set(list(range(num_items_visual))).difference(missing_visual_indexed))
+    propagated_visual_features = visual_features.copy()
+
+    for idx in range(args.layers):
+        print(f'[VISUAL] Propagation layer: {idx + 1}')
+        propagated_visual_features = np.matmul(adj, propagated_visual_features)
+        propagated_visual_features[non_missing_items] = visual_features[non_missing_items]
+
+    for miss in missing_visual_indexed:
+        np.save(os.path.join(output_visual, f'{miss}.npy'), propagated_visual_features[miss])
+
+    # feat prop on textual features
+    for f in os.listdir(f'data/{args.data}/textual_embeddings_indexed'):
+        textual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/textual_embeddings_indexed', f)))
+
+    non_missing_items = list(set(list(range(num_items_textual))).difference(missing_textual_indexed))
+    propagated_textual_features = textual_features.copy()
+
+    for idx in range(args.layers):
+        print(f'[TEXTUAL] Propagation layer: {idx + 1}')
+        propagated_textual_features = np.matmul(adj, propagated_textual_features)
+        propagated_textual_features[non_missing_items] = textual_features[non_missing_items]
+
+    for miss in missing_textual_indexed:
+        np.save(os.path.join(output_textual, f'{miss}.npy'), propagated_textual_features[miss])
 
 elif args.method == 'feat_prop':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'
