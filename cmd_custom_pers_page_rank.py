@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='Digital_Music', help='choose the dataset')
 parser.add_argument('--gpu_id', type=int, default=0, help='choose the gpu id')
 parser.add_argument('--batch_size_jobs', type=int, default=5, help='batch size for jobs')
-parser.add_argument('--cluster', type=str, default='cineca', help='cluster name')
+parser.add_argument('--cluster', type=str, default='', help='cluster name')
 parser.add_argument('--mail_user', type=str, default='', help='your email')
 parser.add_argument('--account', type=str, default='', help='project name')
 parser.add_argument('--model', type=str, default='vbpr', help='project name')
@@ -86,6 +86,8 @@ def main():
     if args.batch_size_jobs == -1:
         args.batch_size_jobs = nb_jobs
 
+    header = None
+
     if args.cluster == 'cineca':
         header = """#!/bin/bash -l
 #SBATCH --job-name=SisInf_Missing_Multimod
@@ -158,6 +160,11 @@ export LANGUAGE="en_US:en"
                 current_command_lines = sorted_command_lines[offset: offset_stop]
                 for job_id, command_line in enumerate(current_command_lines, 1):
                     print(f'test $SLURM_ARRAY_TASK_ID -eq {job_id} && sleep 10 && {command_line}', file=f)
+    else:
+        with open(f'run_multimodal_all_pers_page_rank_{args.dataset}_{args.model}.sh', 'w') as f:
+            print(f'#!/bin/bash', file=f)
+            for command_line in sorted_command_lines:
+                print(f'{command_line}', file=f)
 
 
 if __name__ == '__main__':

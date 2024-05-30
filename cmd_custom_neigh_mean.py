@@ -202,7 +202,7 @@ cd $HOME/workspace/Graph-Missing-Modalities
                 for job_id, command_line in enumerate(current_command_lines, 1):
                     print(f'test $SLURM_ARRAY_TASK_ID -eq {job_id} && sleep 10 && {command_line}', file=f)
     else:
-        with open(f'run_multimodal_all_neigh_mean_{args.dataset}.sh', 'w') as f:
+        with open(f'run_multimodal_all_neigh_mean_{args.dataset}_{args.model}.sh', 'w') as f:
             print(f'#!/bin/bash', file=f)
             for command_line in sorted_command_lines:
                 print(f'{command_line}', file=f)
