@@ -61,9 +61,9 @@ if args.method == 'feat_prop':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -109,9 +109,9 @@ if args.method == 'feat_prop':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -161,9 +161,9 @@ if args.method == 'feat_prop':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -215,9 +215,9 @@ if args.method == 'feat_prop':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -306,9 +306,9 @@ elif args.method == 'pers_page_rank':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -354,9 +354,9 @@ elif args.method == 'pers_page_rank':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -406,9 +406,9 @@ elif args.method == 'pers_page_rank':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -460,9 +460,9 @@ elif args.method == 'pers_page_rank':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -552,9 +552,9 @@ elif args.method == 'neigh_mean':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -600,9 +600,9 @@ elif args.method == 'neigh_mean':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -652,9 +652,9 @@ elif args.method == 'neigh_mean':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
@@ -706,9 +706,9 @@ elif args.method == 'neigh_mean':
           - dataloader: TextualAttribute
             textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
-      top_k: 50
+      top_k: 20
       evaluation:
-        cutoffs: [10, 20, 50]
+        cutoffs: [20]
         simple_metrics: [Recall, nDCG, Precision]
       gpu: 0
       external_models_path: ../external/models/__init__.py
