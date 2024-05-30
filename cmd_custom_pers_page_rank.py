@@ -56,7 +56,7 @@ def main():
 
     script = 'run_multimodal.py'
 
-    if args.fast:
+    if args.fast == 'yes':
         script = 'run_multimodal_fast.py'
 
     for hyperparam in hyperparams:
