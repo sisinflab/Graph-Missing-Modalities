@@ -16,6 +16,7 @@ parser.add_argument('--mail_user', type=str, default='', help='your email')
 parser.add_argument('--account', type=str, default='', help='project name')
 parser.add_argument('--model', type=str, default='vbpr', help='project name')
 parser.add_argument('--partition', type=str, default='', help='partition name')
+parser.add_argument('--fast', type=str, default='no', help='whether to run fast training or not')
 
 args = parser.parse_args()
 
@@ -53,6 +54,11 @@ def main():
 
     command_lines = set()
 
+    script = 'run_multimodal.py'
+
+    if args.fast:
+        script = 'run_multimodal_fast.py'
+
     for hyperparam in hyperparams:
         logfile = to_logfile(hyperparam)
         completed = False
@@ -63,15 +69,21 @@ def main():
 
         if not completed:
             if args.cluster == 'cineca':
-                command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python run_multimodal.py {to_cmd(hyperparam)} '
+                command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python {script} {to_cmd(hyperparam)} '
                                 f'--dataset={args.dataset} '
                                 f'--method=pers_page_rank '
                                 f'--model={args.model} > {logs_path}/{args.dataset}/pers_page_rank/{args.model}/{logfile} 2>&1')
             elif args.cluster == 'margaret':
-                command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 $HOME/.conda/envs/missing/bin/python run_multimodal.py {to_cmd(hyperparam)} '
+                command_line = (f'CUBLAS_WORKSPACE_CONFIG=:4096:8 $HOME/.conda/envs/missing/bin/python {script} {to_cmd(hyperparam)} '
                                 f'--dataset={args.dataset} '
                                 f'--method=pers_page_rank '
                                 f'--model={args.model} > {logs_path}/{args.dataset}/pers_page_rank/{args.model}/{logfile} 2>&1')
+            elif args.cluster == '':
+                command_line = (
+                    f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python {script} {to_cmd(hyperparam)} '
+                    f'--dataset={args.dataset} '
+                    f'--method=pers_page_rank '
+                    f'--model={args.model}')
             command_lines |= {command_line}
 
     # Sort command lines and remove duplicates
