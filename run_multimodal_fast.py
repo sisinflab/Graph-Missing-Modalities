@@ -17,23 +17,21 @@ textual_folder_original_indexed = f'./data/{args.dataset}/textual_embeddings_ind
 
 dictionary = {
     'Beauty': {
-        'model': {
-            'vbpr': {
-                'lr': 0.0,
-                'l_w': 0.0
-            },
-            'ngcfm': {
-                'lr': 0.0,
-                'l_w': 0.0
-            },
-            'freedom': {
-                'lr': 0.001,
-                'l_w': 1e-2
-            },
-            'bm3': {
-                'lr': 0.0,
-                'l_w': 0.0
-            }
+        'vbpr': {
+            'lr': 0.0,
+            'l_w': 0.0
+        },
+        'ngcfm': {
+            'lr': 0.0,
+            'l_w': 0.0
+        },
+        'freedom': {
+            'lr': 0.001,
+            'l_w': 1e-2
+        },
+        'bm3': {
+            'lr': 0.0,
+            'l_w': 0.0
         }
     }
 }
