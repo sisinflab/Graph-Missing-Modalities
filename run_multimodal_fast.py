@@ -18,12 +18,12 @@ textual_folder_original_indexed = f'./data/{args.dataset}/textual_embeddings_ind
 dictionary = {
     'Beauty': {
         'vbpr': {
-            'lr': 0.0,
-            'l_w': 0.0
+            'lr': 0.005,
+            'l_w': 1e-2
         },
         'ngcfm': {
-            'lr': 0.0,
-            'l_w': 0.0
+            'lr': [0.001, 0.0005],
+            'l_w': 1e-2
         },
         'freedom': {
             'lr': 0.001,
