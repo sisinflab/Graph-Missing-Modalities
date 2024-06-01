@@ -658,6 +658,60 @@ elif args.method == 'neigh_mean':
             monitor: Recall@20
             verbose: True
     """
+    elif args.model == 'grcn':
+        config = f""""experiment:
+      backend: pytorch
+      path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.dataset}/{args.top_k}/folder/performance/
+      data_config:
+        strategy: fixed
+        train_path: ../data/{args.dataset}/train_indexed.tsv
+        validation_path: ../data/{args.dataset}/val_indexed.tsv
+        test_path: ../data/{args.dataset}/test_indexed.tsv
+        side_information:
+          - dataloader: VisualAttribute
+            visual_features: ../data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+          - dataloader: TextualAttribute
+            textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+      dataset: dataset_name
+      top_k: 20
+      evaluation:
+        cutoffs: [20]
+        simple_metrics: [Recall, nDCG, Precision]
+      gpu: 0
+      external_models_path: ../external/models/__init__.py
+      models:
+        external.GRCN:
+      meta:
+        hyper_opt_alg: grid
+        verbose: True
+        save_weights: False
+        save_recs: False
+        validation_rate: 1
+        validation_metric: Recall@20
+        restore: False
+      lr: [ 0.0001, 0.001, 0.01, 0.1, 1 ]
+      epochs: 200
+      num_layers: 2
+      num_routings: 3
+      factors: 64
+      factors_multimod: 128
+      batch_size: 1024
+      aggregation: add
+      weight_mode: confid
+      pruning: True
+      has_act: False
+      fusion_mode: concat
+      modalities: ('visual', 'textual')
+      l_w: [ 1e-5, 1e-2 ]
+      seed: 123
+      early_stopping:
+        patience: 5
+        mode: auto
+        monitor: Recall@20
+        verbose: True
+        """
     elif args.model == 'ngcfm':
         config = f"""experiment:
       backend: pytorch
