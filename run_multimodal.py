@@ -659,7 +659,7 @@ elif args.method == 'neigh_mean':
             verbose: True
     """
     elif args.model == 'grcn':
-        config = f""""experiment:
+        config = f"""experiment:
       backend: pytorch
       path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
       path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
@@ -683,35 +683,35 @@ elif args.method == 'neigh_mean':
       external_models_path: ../external/models/__init__.py
       models:
         external.GRCN:
-      meta:
-        hyper_opt_alg: grid
-        verbose: True
-        save_weights: False
-        save_recs: False
-        validation_rate: 1
-        validation_metric: Recall@20
-        restore: False
-      lr: [ 0.0001, 0.001, 0.01, 0.1, 1 ]
-      epochs: 200
-      num_layers: 2
-      num_routings: 3
-      factors: 64
-      factors_multimod: 128
-      batch_size: 1024
-      aggregation: add
-      weight_mode: confid
-      pruning: True
-      has_act: False
-      fusion_mode: concat
-      modalities: ('visual', 'textual')
-      l_w: [ 1e-5, 1e-2 ]
-      seed: 123
-      early_stopping:
-        patience: 5
-        mode: auto
-        monitor: Recall@20
-        verbose: True
-        """
+          meta:
+            hyper_opt_alg: grid
+            verbose: True
+            save_weights: False
+            save_recs: False
+            validation_rate: 1
+            validation_metric: Recall@20
+            restore: False
+          lr: [ 0.0001, 0.001, 0.01, 0.1, 1 ]
+          epochs: 200
+          num_layers: 2
+          num_routings: 3
+          factors: 64
+          factors_multimod: 128
+          batch_size: 1024
+          aggregation: add
+          weight_mode: confid
+          pruning: True
+          has_act: False
+          fusion_mode: concat
+          modalities: ('visual', 'textual')
+          l_w: [ 1e-5, 1e-2 ]
+          seed: 123
+          early_stopping:
+            patience: 5
+            mode: auto
+            monitor: Recall@20
+            verbose: True
+            """
     elif args.model == 'ngcfm':
         config = f"""experiment:
       backend: pytorch
