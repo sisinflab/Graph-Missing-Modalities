@@ -6,57 +6,64 @@ Module description:
 from ast import literal_eval as make_tuple
 
 from tqdm import tqdm
+import numpy as np
 import torch
 import os
-import numpy as np
 
 from elliot.utils.write import store_recommendation
-from elliot.dataset.samplers import custom_sampler_batch as csb
+from elliot.dataset.samplers import custom_sampler_full as csf
 from elliot.recommender import BaseRecommenderModel
 from elliot.recommender.base_recommender_model import init_charger
 from elliot.recommender.recommender_utils_mixin import RecMixin
+from .GRCNModel import GRCNModel
+
 from torch_sparse import SparseTensor
-from .LATTICEModel import LATTICEModel
 
 
-class LATTICE(RecMixin, BaseRecommenderModel):
+class GRCN(RecMixin, BaseRecommenderModel):
     r"""
-    Mining Latent Structures for Multimedia Recommendation
+    Graph-Refined Convolutional Network for Multimedia Recommendation with Implicit Feedback
 
-    For further details, please refer to the `paper <https://dl.acm.org/doi/10.1145/3474085.3475259>`_
+    For further details, please refer to the `paper <https://dl.acm.org/doi/10.1145/3394171.3413556>`_
 
     Args:
         lr: Learning rate
         epochs: Number of epochs
-        n_layers: Number of propagation layers for the item-item graph
-        n_ui_layers: Number of propagation layers for the user-item graph
+        num_layers: Number of propagation layers
+        num_routings: Number of routing iterations
         factors: Number of latent factors
         factors_multimod: Tuple with number of units for each modality
         batch_size: Batch size
         l_w: Regularization coefficient
         modalities: Tuple of modalities
-        lambda: Parameter for the skip connection on the adjacency matrix
-        top_k: Top-k for similarity matrix
+        aggregation: Type of aggregation
+        weight_mode: Type of weight
+        pruning: Whether to pruning or not
+        has_act: Whether to use activation or not
+        fusion_mode: Type of multimodal fusion
 
     To include the recommendation model, add it to the config file adopting the following pattern:
 
     .. code:: yaml
 
       models:
-        LATTICE:
+        GRCN:
           meta:
             save_recs: True
-          lr: 0.0001
-          epochs: 400
-          n_layers: 1
-          n_ui_layers: 3
+          lr: 0.0005
+          epochs: 50
+          num_layers: 3
+          num_routings: 10
           factors: 64
-          factors_multimod: 64
-          batch_size: 1024
-          l_w: 0.000001
-          modalities: (visual, textual)
-          lambda: 0.1
-          top_k: 100
+          factors_multimod: (64,64)
+          batch_size: 256
+          l_w: 0.1
+          modalities: (visual,textual)
+          aggregation: concat
+          weight_mode: max
+          pruning: True
+          has_act: False
+          fusion_mode: concat
     """
 
     @init_charger
@@ -67,30 +74,50 @@ class LATTICE(RecMixin, BaseRecommenderModel):
             ("_learning_rate", "lr", "lr", 0.0005, float, None),
             ("_factors", "factors", "factors", 64, int, None),
             ("_l_w", "l_w", "l_w", 0.01, float, None),
-            ("_n_layers", "n_layers", "n_layers", 1, int, None),
-            ("_n_ui_layers", "n_ui_layers", "n_ui_layers", 3, int, None),
-            ("_top_k", "top_k", "top_k", 100, int, None),
+            ("_num_layers", "num_layers", "num_layers", 3, int, None),
+            ("_num_routings", "num_routings", "num_routings", 10, int, None),
             ("_factors_multimod", "factors_multimod", "factors_multimod", 64, int, None),
             ("_modalities", "modalities", "modalites", "('visual','textual')", lambda x: list(make_tuple(x)),
              lambda x: self._batch_remove(str(x), " []").replace(",", "-")),
-            ("_lambda", "l_m", "l_m", 0.1, float, None),
+            ("_aggregation", "aggregation", "aggr", 'concat', str, None),
+            ("_weight_mode", "weight_mode", "w_mod", 'max', str, None),
+            ("_pruning", "pruning", "prun", True, bool, None),
+            ("_has_act", "has_act", "act", False, bool, None),
+            ("_fusion_mode", "fusion_mode", "f_mod", 'concat', str, None),
             ("_loaders", "loaders", "loads", "('VisualAttribute','TextualAttribute')", lambda x: list(make_tuple(x)),
              lambda x: self._batch_remove(str(x), " []").replace(",", "-"))
         ]
         self.autoset_params()
 
-        self._sampler = csb.Sampler(self._data.i_train_dict, self._seed)
+        np.random.seed(self._seed)
+
+        self._sampler = csf.Sampler(self._data.i_train_dict, self._seed)
         if self._batch_size < 1:
             self._batch_size = self._num_users
 
         row, col = data.sp_i_train.nonzero()
         col = [c + self._num_users for c in col]
+        _, counts = np.unique(row, return_counts=True)
+        ptr = [0]
+        c = counts.tolist()
+        for i in range(len(c)):
+            ptr += [ptr[i] + c[i]]
+        ptr = torch.tensor(np.array(ptr), dtype=torch.int64)
+        _, counts_full = np.unique(np.concatenate((row, np.array(col))), return_counts=True)
+        ptr_full = [0]
+        c_full = counts_full.tolist()
+        for i in range(len(c_full)):
+            ptr_full += [ptr_full[i] + c_full[i]]
+        ptr_full = torch.tensor(np.array(ptr_full), dtype=torch.int64)
         edge_index = np.array([row, col])
         edge_index = torch.tensor(edge_index, dtype=torch.int64)
         self.adj = SparseTensor(row=torch.cat([edge_index[0], edge_index[1]], dim=0),
                                 col=torch.cat([edge_index[1], edge_index[0]], dim=0),
                                 sparse_sizes=(self._num_users + self._num_items,
                                               self._num_users + self._num_items))
+        self.adj_user = SparseTensor(row=edge_index[0],
+                                     col=edge_index[1], sparse_sizes=(self._num_users + self._num_items,
+                                                                      self._num_users + self._num_items))
 
         for m_id, m in enumerate(self._modalities):
             self.__setattr__(f'''_side_{m}''',
@@ -101,26 +128,34 @@ class LATTICE(RecMixin, BaseRecommenderModel):
             all_multimodal_features.append(self.__getattribute__(
                 f'''_side_{self._modalities[m_id]}''').object.get_all_features())
 
-        self._model = LATTICEModel(
+        self._model = GRCNModel(
             num_users=self._num_users,
             num_items=self._num_items,
-            num_layers=self._n_layers,
-            num_ui_layers=self._n_ui_layers,
             learning_rate=self._learning_rate,
             embed_k=self._factors,
             embed_k_multimod=self._factors_multimod,
             l_w=self._l_w,
+            num_layers=self._num_layers,
+            num_routings=self._num_routings,
             modalities=self._modalities,
-            l_m=self._lambda,
-            top_k=self._top_k,
+            aggregation=self._aggregation,
+            weight_mode=self._weight_mode,
+            pruning=self._pruning,
+            has_act=self._has_act,
+            fusion_mode=self._fusion_mode,
             multimodal_features=all_multimodal_features,
             adj=self.adj,
+            adj_user=self.adj_user,
+            rows=row,
+            cols=col,
+            ptr=ptr,
+            ptr_full=ptr_full,
             random_seed=self._seed
         )
 
     @property
     def name(self):
-        return "LATTICE" \
+        return "GRCN" \
                + f"_{self.get_base_params_shortcut()}" \
                + f"_{self.get_params_shortcut()}"
 
@@ -128,19 +163,20 @@ class LATTICE(RecMixin, BaseRecommenderModel):
         if self._restore:
             return self.restore_weights()
 
+        row, col = self._data.sp_i_train.nonzero()
+        edge_index = np.array([row, col]).transpose()
+
         for it in self.iterate(self._epochs):
             loss = 0
             steps = 0
-            build_item_graph = True
             self._model.train()
+            np.random.shuffle(edge_index)
             with tqdm(total=int(self._data.transactions // self._batch_size), disable=not self._verbose) as t:
-                for batch in self._sampler.step(self._data.transactions, self._batch_size):
+                for batch in self._sampler.step(edge_index, self._data.transactions, self._batch_size):
                     steps += 1
-                    loss += self._model.train_step(batch, build_item_graph)
+                    loss += self._model.train_step(batch)
                     t.set_postfix({'loss': f'{loss / steps:.5f}'})
                     t.update()
-                    build_item_graph = False
-                self._model.lr_scheduler.step()
 
             self.evaluate(it, loss / (it + 1))
 
@@ -149,10 +185,9 @@ class LATTICE(RecMixin, BaseRecommenderModel):
         predictions_top_k_val = {}
         self._model.eval()
         with torch.no_grad():
-            gum, gim = self._model.propagate_embeddings(build_item_graph=True)
             for index, offset in enumerate(range(0, self._num_users, self._batch_size)):
                 offset_stop = min(offset + self._batch_size, self._num_users)
-                predictions = self._model.predict(gum[offset: offset_stop], gim)
+                predictions = self._model.predict(offset, offset_stop)
                 recs_val, recs_test = self.process_protocol(k, predictions, offset, offset_stop)
                 predictions_top_k_val.update(recs_val)
                 predictions_top_k_test.update(recs_test)
@@ -174,7 +209,7 @@ class LATTICE(RecMixin, BaseRecommenderModel):
             self._results.append(result_dict)
 
             if it is not None:
-                self.logger.info(f'Epoch {(it + 1)}/{self._epochs} loss {loss/(it + 1):.5f}')
+                self.logger.info(f'Epoch {(it + 1)}/{self._epochs} loss {loss / (it + 1):.5f}')
             else:
                 self.logger.info(f'Finished')
 

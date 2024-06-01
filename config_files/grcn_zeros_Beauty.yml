@@ -7,10 +7,10 @@ experiment:
     test_path: ../data/{0}/test_indexed.tsv
     side_information:
       - dataloader: VisualAttribute
-        visual_features: ../data/{0}/visual_embeddings_mean_complete_indexed
+        visual_features: ../data/{0}/visual_embeddings_zeros_complete_indexed
       - dataloader: TextualAttribute
-        textual_features: ../data/{0}/textual_embeddings_mean_complete_indexed
-  dataset: Digital_Music
+        textual_features: ../data/{0}/textual_embeddings_zeros_complete_indexed
+  dataset: Beauty
   top_k: 20
   evaluation:
     cutoffs: [ 20 ]
@@ -18,7 +18,7 @@ experiment:
   gpu: 0
   external_models_path: ../external/models/__init__.py
   models:
-    external.LATTICE:
+    external.GRCN:
       meta:
         hyper_opt_alg: grid
         verbose: True
@@ -27,17 +27,20 @@ experiment:
         validation_rate: 1
         validation_metric: Recall@20
         restore: False
+      lr: [ 0.0001, 0.001, 0.01, 0.1, 1 ]
       epochs: 200
-      batch_size: 1024
+      num_layers: 2
+      num_routings: 3
       factors: 64
-      lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
-      l_w: [ 1e-5, 1e-2 ]
-      n_layers: 1
-      n_ui_layers: 2
-      top_k: 20
-      l_m: 0.7
-      factors_multimod: 64
+      factors_multimod: 128
+      batch_size: 1024
+      aggregation: add
+      weight_mode: confid
+      pruning: True
+      has_act: False
+      fusion_mode: concat
       modalities: ('visual', 'textual')
+      l_w: [ 1e-5, 1e-2 ]
       seed: 123
       early_stopping:
         patience: 5
