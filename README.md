@@ -1,7 +1,7 @@
 # Graph-Missing-Modalities
 
 This is the official implementation of the paper "_Do We Really Need to Drop Items with Missing Modalities in
-Multimodal Recommendation?_", under review at CIKM 2024 as short paper.
+Multimodal Recommendation?_", under review at CIKM 2024 as a short paper.
 
 ## Requirements
 
@@ -14,12 +14,12 @@ pip install -r requirements_torch_geometric.txt
 
 ## Datasets
 
-### Datasets donwload
+### Datasets download
 
 Download the Office, Music, and Beauty datasets from the original repository:
 
 - Office:
-  - Reviews: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Beauty_5.json.gz
+  - Reviews: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Office_Products_5.json.gz
   - Metadata: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Office_Products.json.gz
 - Music:
   - Reviews: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Digital_Music_5.json.gz
