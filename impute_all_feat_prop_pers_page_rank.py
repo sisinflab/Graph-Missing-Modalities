@@ -2,7 +2,7 @@ from sklearn.model_selection import ParameterGrid
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='Office_Products', help='choose the dataset')
+parser.add_argument('--data', type=str, default='Office_Products', help='choose the dataset')
 parser.add_argument('--method', type=str, default='pers_page_rank', help='choose the method')
 parser.add_argument('--gpu_id', type=int, default=0, help='choose gpu id')
 args = parser.parse_args()
@@ -16,11 +16,11 @@ bash = "#!/bin/bash\n"
 
 for hyp in hyperparams:
     bash += (f"python impute.py "
-             f"--data {args.dataset} "
+             f"--data {args.data} "
              f"--gpu {args.gpu_id} "
              f"--layers {hyp['--layers']} "
              f"--top_k {hyp['--top_k']} "
              f"--method {args.method}\n")
 
-with open(f"impute_all_{args.method}_{args.dataset}.sh", 'w') as f:
+with open(f"impute_all_{args.method}_{args.data}.sh", 'w') as f:
     f.write(bash)

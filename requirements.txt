@@ -7,5 +7,4 @@ pandas
 Pillow
 PyYAML
 scikit_learn
-visdom
 Pyarrow

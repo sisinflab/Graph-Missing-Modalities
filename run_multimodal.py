@@ -4,7 +4,7 @@ import shutil
 import argparse
 
 parser = argparse.ArgumentParser(description="Run sample main.")
-parser.add_argument('--dataset', type=str, default='Office_Products')
+parser.add_argument('--data', type=str, default='Office_Products')
 parser.add_argument('--model', type=str, default='lightgcnm')
 parser.add_argument('--method', type=str, default='zeros')
 parser.add_argument('--layers', type=str, default='3')
@@ -12,8 +12,8 @@ parser.add_argument('--top_k', type=str, default='20')
 parser.add_argument('--a', type=str, default='0.1')
 args = parser.parse_args()
 
-visual_folder_original_indexed = f'./data/{args.dataset}/visual_embeddings_indexed'
-textual_folder_original_indexed = f'./data/{args.dataset}/textual_embeddings_indexed'
+visual_folder_original_indexed = f'./data/{args.data}/visual_embeddings_indexed'
+textual_folder_original_indexed = f'./data/{args.data}/textual_embeddings_indexed'
 
 if args.method == 'feat_prop':
 
@@ -23,19 +23,19 @@ if args.method == 'feat_prop':
     if args.model == 'vbpr':
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -71,19 +71,19 @@ if args.method == 'feat_prop':
     elif args.model == 'ngcfm':
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -120,72 +120,22 @@ if args.method == 'feat_prop':
             monitor: Recall@20
             verbose: True
             """
-    elif args.model == 'lightgcnm':
-        config = f"""experiment:
-      backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/performance/
-      data_config:
-        strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
-        side_information:
-          - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
-          - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
-      dataset: dataset_name
-      top_k: 20
-      evaluation:
-        cutoffs: [20]
-        simple_metrics: [Recall, nDCG, Precision]
-      gpu: 0
-      external_models_path: ../external/models/__init__.py
-      models:
-        external.LightGCNM:
-          meta:
-            hyper_opt_alg: grid
-            verbose: True
-            save_weights: False
-            save_recs: False
-            validation_rate: 1
-            validation_metric: Recall@20
-            restore: False
-          lr:  [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
-          epochs: 200
-          n_layers: 3
-          factors: 64
-          normalize: True
-          l_w: [ 1e-5, 1e-2 ]
-          modalities: ('visual', 'textual')
-          loaders: ('VisualAttribute','TextualAttribute')
-          batch_size: 1024
-          aggregation: concat
-          seed: 123
-          early_stopping:
-            patience: 5
-            mode: auto
-            monitor: Recall@20
-            verbose: True
-            """
     elif args.model == "freedom":
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -227,19 +177,19 @@ if args.method == 'feat_prop':
     elif args.model == "bm3":
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -279,13 +229,13 @@ if args.method == 'feat_prop':
     else:
         raise NotImplemented
 
-    with open(f'./config_files/{args.model}_feat_prop_{args.layers}_{args.top_k}_{args.dataset}.yml', 'w') as f:
-        f.write(config.format(args.dataset).replace('dataset_name', args.dataset))
+    with open(f'./config_files/{args.model}_feat_prop_{args.layers}_{args.top_k}_{args.data}.yml', 'w') as f:
+        f.write(config.format(args.data).replace('dataset_name', args.data))
 
-    visual_folder_imputed_indexed = f'./data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
-    textual_folder_imputed_indexed = f'./data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
-    visual_folder_complete = f'./data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
-    textual_folder_complete = f'./data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
+    visual_folder_imputed_indexed = f'./data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+    textual_folder_imputed_indexed = f'./data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_indexed'
+    visual_folder_complete = f'./data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
+    textual_folder_complete = f'./data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_complete_indexed'
 
     if not os.path.exists(visual_folder_complete):
         os.makedirs(visual_folder_complete)
@@ -303,12 +253,12 @@ if args.method == 'feat_prop':
     for it in os.listdir(textual_folder_imputed_indexed):
         shutil.copy(os.path.join(textual_folder_imputed_indexed, it), textual_folder_complete)
 
-    run_experiment(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.dataset}.yml")
+    run_experiment(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.data}.yml")
 
     shutil.rmtree(visual_folder_complete)
     shutil.rmtree(textual_folder_complete)
 
-    os.remove(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.dataset}.yml")
+    os.remove(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.data}.yml")
 
 elif args.method == 'pers_page_rank':
 
@@ -318,19 +268,19 @@ elif args.method == 'pers_page_rank':
     if args.model == 'vbpr':
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -366,19 +316,19 @@ elif args.method == 'pers_page_rank':
     elif args.model == 'ngcfm':
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -415,72 +365,22 @@ elif args.method == 'pers_page_rank':
             monitor: Recall@20
             verbose: True
             """
-    elif args.model == 'lightgcnm':
-        config = f"""experiment:
-      backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
-      data_config:
-        strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
-        side_information:
-          - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
-          - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
-      dataset: dataset_name
-      top_k: 20
-      evaluation:
-        cutoffs: [20]
-        simple_metrics: [Recall, nDCG, Precision]
-      gpu: 0
-      external_models_path: ../external/models/__init__.py
-      models:
-        external.LightGCNM:
-          meta:
-            hyper_opt_alg: grid
-            verbose: True
-            save_weights: False
-            save_recs: False
-            validation_rate: 1
-            validation_metric: Recall@20
-            restore: False
-          lr:  [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
-          epochs: 200
-          n_layers: 3
-          factors: 64
-          normalize: True
-          l_w: [ 1e-5, 1e-2 ]
-          modalities: ('visual', 'textual')
-          loaders: ('VisualAttribute','TextualAttribute')
-          batch_size: 1024
-          aggregation: concat
-          seed: 123
-          early_stopping:
-            patience: 5
-            mode: auto
-            monitor: Recall@20
-            verbose: True
-            """
     elif args.model == "freedom":
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -522,19 +422,19 @@ elif args.method == 'pers_page_rank':
     elif args.model == "bm3":
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.layers}_{args.top_k}_{args.a}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -574,13 +474,13 @@ elif args.method == 'pers_page_rank':
     else:
         raise NotImplemented
 
-    with open(f'./config_files/{args.model}_pers_page_rank_{args.layers}_{args.top_k}_{args.a}_{args.dataset}.yml', 'w') as f:
-        f.write(config.format(args.dataset).replace('dataset_name', args.dataset))
+    with open(f'./config_files/{args.model}_pers_page_rank_{args.layers}_{args.top_k}_{args.a}_{args.data}.yml', 'w') as f:
+        f.write(config.format(args.data).replace('dataset_name', args.data))
 
-    visual_folder_imputed_indexed = f'./data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_indexed'
-    textual_folder_imputed_indexed = f'./data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_indexed'
-    visual_folder_complete = f'./data/{args.dataset}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed'
-    textual_folder_complete = f'./data/{args.dataset}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed'
+    visual_folder_imputed_indexed = f'./data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_indexed'
+    textual_folder_imputed_indexed = f'./data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_indexed'
+    visual_folder_complete = f'./data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed'
+    textual_folder_complete = f'./data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.a}_complete_indexed'
 
     if not os.path.exists(visual_folder_complete):
         os.makedirs(visual_folder_complete)
@@ -598,12 +498,12 @@ elif args.method == 'pers_page_rank':
     for it in os.listdir(textual_folder_imputed_indexed):
         shutil.copy(os.path.join(textual_folder_imputed_indexed, it), textual_folder_complete)
 
-    run_experiment(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.a}_{args.dataset}.yml")
+    run_experiment(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.a}_{args.data}.yml")
 
     shutil.rmtree(visual_folder_complete)
     shutil.rmtree(textual_folder_complete)
 
-    os.remove(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.a}_{args.dataset}.yml")
+    os.remove(f"config_files/{args.model}_{args.method}_{args.layers}_{args.top_k}_{args.a}_{args.data}.yml")
 
 elif args.method == 'neigh_mean':
 
@@ -613,19 +513,19 @@ elif args.method == 'neigh_mean':
     if args.model == 'vbpr':
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -658,76 +558,22 @@ elif args.method == 'neigh_mean':
             monitor: Recall@20
             verbose: True
     """
-    elif args.model == 'grcn':
-        config = f"""experiment:
-      backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.top_k}/folder/performance/
-      data_config:
-        strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
-        side_information:
-          - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
-          - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
-      dataset: dataset_name
-      top_k: 20
-      evaluation:
-        cutoffs: [20]
-        simple_metrics: [Recall, nDCG, Precision]
-      gpu: 0
-      external_models_path: ../external/models/__init__.py
-      models:
-        external.GRCN:
-          meta:
-            hyper_opt_alg: grid
-            verbose: True
-            save_weights: False
-            save_recs: False
-            validation_rate: 1
-            validation_metric: Recall@20
-            restore: False
-          lr: [ 0.0001, 0.001, 0.01, 0.1, 1 ]
-          epochs: 200
-          num_layers: 2
-          num_routings: 3
-          factors: 64
-          factors_multimod: 128
-          batch_size: 1024
-          aggregation: add
-          weight_mode: confid
-          pruning: True
-          has_act: False
-          fusion_mode: concat
-          modalities: ('visual', 'textual')
-          l_w: [ 1e-5, 1e-2 ]
-          seed: 123
-          early_stopping:
-            patience: 5
-            mode: auto
-            monitor: Recall@20
-            verbose: True
-            """
     elif args.model == 'ngcfm':
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -764,72 +610,22 @@ elif args.method == 'neigh_mean':
             monitor: Recall@20
             verbose: True
             """
-    elif args.model == 'lightgcnm':
-        config = f"""experiment:
-      backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.top_k}/folder/performance/
-      data_config:
-        strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
-        side_information:
-          - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
-          - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
-      dataset: dataset_name
-      top_k: 20
-      evaluation:
-        cutoffs: [20]
-        simple_metrics: [Recall, nDCG, Precision]
-      gpu: 0
-      external_models_path: ../external/models/__init__.py
-      models:
-        external.LightGCNM:
-          meta:
-            hyper_opt_alg: grid
-            verbose: True
-            save_weights: False
-            save_recs: False
-            validation_rate: 1
-            validation_metric: Recall@20
-            restore: False
-          lr:  [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
-          epochs: 200
-          n_layers: 3
-          factors: 64
-          normalize: True
-          l_w: [ 1e-5, 1e-2 ]
-          modalities: ('visual', 'textual')
-          loaders: ('VisualAttribute','TextualAttribute')
-          batch_size: 1024
-          aggregation: concat
-          seed: 123
-          early_stopping:
-            patience: 5
-            mode: auto
-            monitor: Recall@20
-            verbose: True
-            """
     elif args.model == "freedom":
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -871,19 +667,19 @@ elif args.method == 'neigh_mean':
     elif args.model == "bm3":
         config = f"""experiment:
       backend: pytorch
-      path_output_rec_result: ./results/{args.dataset}/{args.top_k}/folder/recs/
-      path_output_rec_weight: ./results/{args.dataset}/{args.top_k}/folder/weights/
-      path_output_rec_performance: ./results/{args.dataset}/{args.top_k}/folder/performance/
+      path_output_rec_result: ./results/{args.data}/{args.top_k}/folder/recs/
+      path_output_rec_weight: ./results/{args.data}/{args.top_k}/folder/weights/
+      path_output_rec_performance: ./results/{args.data}/{args.top_k}/folder/performance/
       data_config:
         strategy: fixed
-        train_path: ../data/{args.dataset}/train_indexed.tsv
-        validation_path: ../data/{args.dataset}/val_indexed.tsv
-        test_path: ../data/{args.dataset}/test_indexed.tsv
+        train_path: ../data/{args.data}/train_indexed.tsv
+        validation_path: ../data/{args.data}/val_indexed.tsv
+        test_path: ../data/{args.data}/test_indexed.tsv
         side_information:
           - dataloader: VisualAttribute
-            visual_features: ../data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            visual_features: ../data/{args.data}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed
           - dataloader: TextualAttribute
-            textual_features: ../data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
+            textual_features: ../data/{args.data}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed
       dataset: dataset_name
       top_k: 20
       evaluation:
@@ -923,13 +719,13 @@ elif args.method == 'neigh_mean':
     else:
         raise NotImplemented
 
-    with open(f'./config_files/{args.model}_neigh_mean_{args.top_k}_{args.dataset}.yml', 'w') as f:
-        f.write(config.format(args.dataset).replace('dataset_name', args.dataset))
+    with open(f'./config_files/{args.model}_neigh_mean_{args.top_k}_{args.data}.yml', 'w') as f:
+        f.write(config.format(args.data).replace('dataset_name', args.data))
 
-    visual_folder_imputed_indexed = f'./data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_indexed'
-    textual_folder_imputed_indexed = f'./data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_indexed'
-    visual_folder_complete = f'./data/{args.dataset}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed'
-    textual_folder_complete = f'./data/{args.dataset}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed'
+    visual_folder_imputed_indexed = f'./data/{args.data}/visual_embeddings_neigh_mean_{args.top_k}_indexed'
+    textual_folder_imputed_indexed = f'./data/{args.data}/textual_embeddings_neigh_mean_{args.top_k}_indexed'
+    visual_folder_complete = f'./data/{args.data}/visual_embeddings_neigh_mean_{args.top_k}_complete_indexed'
+    textual_folder_complete = f'./data/{args.data}/textual_embeddings_neigh_mean_{args.top_k}_complete_indexed'
 
     if not os.path.exists(visual_folder_complete):
         os.makedirs(visual_folder_complete)
@@ -947,17 +743,17 @@ elif args.method == 'neigh_mean':
     for it in os.listdir(textual_folder_imputed_indexed):
         shutil.copy(os.path.join(textual_folder_imputed_indexed, it), textual_folder_complete)
 
-    run_experiment(f"config_files/{args.model}_neigh_mean_{args.top_k}_{args.dataset}.yml")
+    run_experiment(f"config_files/{args.model}_neigh_mean_{args.top_k}_{args.data}.yml")
 
     shutil.rmtree(visual_folder_complete)
     shutil.rmtree(textual_folder_complete)
 
-    os.remove(f"config_files/{args.model}_neigh_mean_{args.top_k}_{args.dataset}.yml")
+    os.remove(f"config_files/{args.model}_neigh_mean_{args.top_k}_{args.data}.yml")
 else:
-    visual_folder_imputed_indexed = f'./data/{args.dataset}/visual_embeddings_{args.method}_indexed'
-    textual_folder_imputed_indexed = f'./data/{args.dataset}/textual_embeddings_{args.method}_indexed'
-    visual_folder_complete = f'./data/{args.dataset}/visual_embeddings_{args.method}_complete_indexed'
-    textual_folder_complete = f'./data/{args.dataset}/textual_embeddings_{args.method}_complete_indexed'
+    visual_folder_imputed_indexed = f'./data/{args.data}/visual_embeddings_{args.method}_indexed'
+    textual_folder_imputed_indexed = f'./data/{args.data}/textual_embeddings_{args.method}_indexed'
+    visual_folder_complete = f'./data/{args.data}/visual_embeddings_{args.method}_complete_indexed'
+    textual_folder_complete = f'./data/{args.data}/textual_embeddings_{args.method}_complete_indexed'
 
     if not os.path.exists(visual_folder_complete):
         os.makedirs(visual_folder_complete)
@@ -975,7 +771,7 @@ else:
     for it in os.listdir(textual_folder_imputed_indexed):
         shutil.copy(os.path.join(textual_folder_imputed_indexed, it), textual_folder_complete)
 
-    run_experiment(f"config_files/{args.model}_{args.method}_{args.dataset}.yml")
+    run_experiment(f"config_files/{args.model}_{args.method}_{args.data}.yml")
 
     shutil.rmtree(visual_folder_complete)
     shutil.rmtree(textual_folder_complete)
