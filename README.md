@@ -1,7 +1,7 @@
 # Graph-Missing-Modalities
 
 This is the official implementation of the paper "_Do We Really Need to Drop Items with Missing Modalities in
-Multimodal Recommendation?_", under review at CIKM 2024 as short paper.
+Multimodal Recommendation?_", under review at CIKM 2024 as a short paper.
 
 ## Requirements
 
@@ -14,7 +14,7 @@ pip install -r requirements_torch_geometric.txt
 
 ## Datasets
 
-### Datasets donwload
+### Datasets download
 
 Download the Office, Music, and Beauty datasets from the original repository:
 
