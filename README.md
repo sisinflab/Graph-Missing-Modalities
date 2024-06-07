@@ -19,7 +19,7 @@ pip install -r requirements_torch_geometric.txt
 Download the Office, Music, and Beauty datasets from the original repository:
 
 - Office:
-  - Reviews: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Beauty_5.json.gz
+  - Reviews: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Office_Products_5.json.gz
   - Metadata: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Office_Products.json.gz
 - Music:
   - Reviews: https://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Digital_Music_5.json.gz
