@@ -163,6 +163,6 @@ chmod +777 run_multimodal_all_pers_page_rank_<dataset_name>_<multimodal_recommen
 To collect all results for MultiHop and PersPageRank (the settings with the highest number of configurations), run the following:
 ```sh
 chmod +777 collect_results.sh
-./collect_results <dataset_name> <method> <model>
+./collect_results.sh <dataset_name> <method> <model>
 python collect_results.py --data <dataset_name> --model <multimodal_recommender> --method <method> --metric <metric_name>
 ```
