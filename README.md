@@ -1,7 +1,7 @@
 # Graph-Missing-Modalities
 
 This is the official implementation of the paper "_Do We Really Need to Drop Items with Missing Modalities in
-Multimodal Recommendation?_", under review at CIKM 2024 as a short paper.
+Multimodal Recommendation?_", accepted at CIKM 2024 as a short paper.
 
 ## Requirements
 
