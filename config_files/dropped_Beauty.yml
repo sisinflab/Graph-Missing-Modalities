@@ -18,50 +18,102 @@ experiment:
   gpu: 0
   external_models_path: ../external/models/__init__.py
   models:
-    external.BPRMF:
-      meta:
-        hyper_opt_alg: grid
-        verbose: True
-        save_weights: False
-        save_recs: False
-        validation_rate: 1
-        validation_metric: Recall@20
-        restore: False
-      lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
-      epochs: 200
-      factors: 64
-      batch_size: 1024
-      l_w: [ 1e-5, 1e-2 ]
-      seed: 123
-      early_stopping:
-        patience: 5
-        mode: auto
-        monitor: Recall@20
-        verbose: True
-    external.VBPR:
-      meta:
-        hyper_opt_alg: grid
-        verbose: True
-        save_weights: False
-        save_recs: False
-        validation_rate: 1
-        validation_metric: Recall@20
-        restore: False
-      lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
-      factors: 64
-      epochs: 200
-      l_w: [ 1e-5, 1e-2 ]
-      modalities: ('visual', 'textual')
-      loaders: ('VisualAttribute','TextualAttribute')
-      batch_size: 1024
-      comb_mod: concat
-      seed: 123
-      early_stopping:
-        patience: 5
-        mode: auto
-        monitor: Recall@20
-        verbose: True
-    external.NGCF:
+#    external.BPRMF:
+#      meta:
+#        hyper_opt_alg: grid
+#        verbose: True
+#        save_weights: False
+#        save_recs: False
+#        validation_rate: 1
+#        validation_metric: Recall@20
+#        restore: False
+#      lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
+#      epochs: 200
+#      factors: 64
+#      batch_size: 1024
+#      l_w: [ 1e-5, 1e-2 ]
+#      seed: 123
+#      early_stopping:
+#        patience: 5
+#        mode: auto
+#        monitor: Recall@20
+#        verbose: True
+#    external.VBPR:
+#      meta:
+#        hyper_opt_alg: grid
+#        verbose: True
+#        save_weights: False
+#        save_recs: False
+#        validation_rate: 1
+#        validation_metric: Recall@20
+#        restore: False
+#      lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
+#      factors: 64
+#      epochs: 200
+#      l_w: [ 1e-5, 1e-2 ]
+#      modalities: ('visual', 'textual')
+#      loaders: ('VisualAttribute','TextualAttribute')
+#      batch_size: 1024
+#      comb_mod: concat
+#      seed: 123
+#      early_stopping:
+#        patience: 5
+#        mode: auto
+#        monitor: Recall@20
+#        verbose: True
+#    external.NGCF:
+#      meta:
+#        hyper_opt_alg: grid
+#        verbose: True
+#        save_weights: False
+#        save_recs: False
+#        validation_rate: 1
+#        validation_metric: Recall@20
+#        restore: False
+#      lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
+#      epochs: 200
+#      n_layers: 3
+#      factors: 64
+#      weight_size: 64
+#      node_dropout: 0.1
+#      message_dropout: 0.1
+#      batch_size: 1024
+#      normalize: True
+#      l_w: [ 1e-5, 1e-2 ]
+#      seed: 123
+#      early_stopping:
+#        patience: 5
+#        mode: auto
+#        monitor: Recall@20
+#        verbose: True
+#    external.NGCFM:
+#      meta:
+#        hyper_opt_alg: grid
+#        verbose: True
+#        save_weights: False
+#        save_recs: False
+#        validation_rate: 1
+#        validation_metric: Recall@20
+#        restore: False
+#      lr: [ 0.0001, 0.0005, 0.001, 0.005, 0.01 ]
+#      epochs: 200
+#      n_layers: 3
+#      factors: 64
+#      weight_size: 64
+#      node_dropout: 0.1
+#      message_dropout: 0.1
+#      batch_size: 1024
+#      modalities: ('visual', 'textual')
+#      loaders: ('VisualAttribute','TextualAttribute')
+#      normalize: True
+#      l_w: [ 1e-5, 1e-2 ]
+#      seed: 123
+#      early_stopping:
+#        patience: 5
+#        mode: auto
+#        monitor: Recall@20
+#        verbose: True
+    external.LightGCN:
       meta:
         hyper_opt_alg: grid
         verbose: True
@@ -74,9 +126,6 @@ experiment:
       epochs: 200
       n_layers: 3
       factors: 64
-      weight_size: 64
-      node_dropout: 0.1
-      message_dropout: 0.1
       batch_size: 1024
       normalize: True
       l_w: [ 1e-5, 1e-2 ]
@@ -86,7 +135,7 @@ experiment:
         mode: auto
         monitor: Recall@20
         verbose: True
-    external.NGCFM:
+    external.LightGCNM:
       meta:
         hyper_opt_alg: grid
         verbose: True
@@ -99,9 +148,6 @@ experiment:
       epochs: 200
       n_layers: 3
       factors: 64
-      weight_size: 64
-      node_dropout: 0.1
-      message_dropout: 0.1
       batch_size: 1024
       modalities: ('visual', 'textual')
       loaders: ('VisualAttribute','TextualAttribute')

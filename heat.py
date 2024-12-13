@@ -16,7 +16,7 @@ args = parser.parse_args()
 hyperparams = ParameterGrid({
     "--layers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
     "--top_k": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-    "--a": [0.1]
+    "--t": [5.0]
 })
 
 
@@ -38,8 +38,8 @@ def to_logfile(c):
 def main():
     logs_path = 'logs'
 
-    if not os.path.exists(logs_path + f'/{args.data}/pers_page_rank/{args.model}/'):
-        os.makedirs(logs_path + f'/{args.data}/pers_page_rank/{args.model}/')
+    if not os.path.exists(logs_path + f'/{args.data}/heat/{args.model}/'):
+        os.makedirs(logs_path + f'/{args.data}/heat/{args.model}/')
 
     command_lines = set()
 
@@ -48,8 +48,8 @@ def main():
     for hyperparam in hyperparams:
         logfile = to_logfile(hyperparam)
         completed = False
-        if os.path.isfile(f'{logs_path}/{args.data}/pers_page_rank/{args.model}/{logfile}'):
-            with open(f'{logs_path}/{args.data}/pers_page_rank/{args.model}/{logfile}', 'r', encoding='utf-8', errors='ignore') as f:
+        if os.path.isfile(f'{logs_path}/{args.data}/heat/{args.model}/{logfile}'):
+            with open(f'{logs_path}/{args.data}/heat/{args.model}/{logfile}', 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
                 completed = ('Best Model params' in content)
 
@@ -57,14 +57,14 @@ def main():
             command_line = (
                 f'CUBLAS_WORKSPACE_CONFIG=:4096:8 python {script} {to_cmd(hyperparam)} '
                 f'--data={args.data} '
-                f'--method=pers_page_rank '
-                f'--model={args.model} > logs/{args.data}/pers_page_rank/{args.model}/{to_cmd(hyperparam).replace("--", "").replace(" ", "_")}.log 2>&1')
+                f'--method=heat '
+                f'--model={args.model} > logs/{args.data}/heat/{args.model}/{to_cmd(hyperparam).replace("--", "").replace(" ", "_")}.log 2>&1')
             command_lines |= {command_line}
 
     # Sort command lines and remove duplicates
     sorted_command_lines = sorted(command_lines)
 
-    with open(f'run_multimodal_all_pers_page_rank_{args.data}_{args.model}.sh', 'w') as f:
+    with open(f'run_multimodal_all_heat_{args.data}_{args.model}.sh', 'w') as f:
         print(f'#!/bin/bash', file=f)
         for command_line in sorted_command_lines:
             print(f'{command_line}', file=f)

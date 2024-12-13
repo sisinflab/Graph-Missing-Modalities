@@ -2,10 +2,10 @@ import argparse
 import os
 import pandas as pd
 import numpy as np
-import shutil
 import torch
 from torch_sparse import SparseTensor, mul, sum, fill_diag, matmul, eye, mul_nnz
 import scipy.sparse as sp
+import scipy
 
 np.random.seed(42)
 
@@ -42,6 +42,7 @@ parser.add_argument('--gpu', type=str, default='0')
 parser.add_argument('--layers', type=int, default=1)
 parser.add_argument('--method', type=str, default='feat_prop')
 parser.add_argument('--alpha', type=float, default=0.1)
+parser.add_argument('--time', type=float, default=5.0)
 parser.add_argument('--top_k', type=int, default=20)
 args = parser.parse_args()
 
@@ -81,6 +82,11 @@ elif args.method == 'pers_page_rank':
         os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed')
     if not os.path.exists(output_textual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed'):
         os.makedirs(output_textual + f'_{args.layers}_{args.top_k}_{args.alpha}_indexed')
+elif args.method == 'heat':
+    if not os.path.exists(output_visual + f'_{args.layers}_{args.top_k}_{args.time}_indexed'):
+        os.makedirs(output_visual + f'_{args.layers}_{args.top_k}_{args.time}_indexed')
+    if not os.path.exists(output_textual + f'_{args.layers}_{args.top_k}_{args.time}_indexed'):
+        os.makedirs(output_textual + f'_{args.layers}_{args.top_k}_{args.time}_indexed')
 else:
     if not os.path.exists(output_visual):
         os.makedirs(output_visual)
@@ -219,6 +225,91 @@ elif args.method == 'pers_page_rank':
     np.fill_diagonal(D_, D_tilde[0, 0])
     H = D_ @ A_tilde @ D_
     adj = args.alpha * np.linalg.inv(np.eye(num_items_visual) - (1 - args.alpha) * H)
+    row_idx = np.arange(num_nodes)
+    adj[adj.argsort(axis=0)[:num_nodes - args.top_k], row_idx] = 0.
+    norm = adj.sum(axis=0)
+    norm[norm <= 0] = 1
+    adj = adj / norm
+
+    try:
+        missing_visual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_visual_indexed.tsv'), sep='\t',
+                                             header=None)
+        missing_visual_indexed = set(missing_visual_indexed[0].tolist())
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        missing_visual_indexed = set()
+
+    try:
+        missing_textual_indexed = pd.read_csv(os.path.join(f'data/{args.data}', 'missing_textual_indexed.tsv'),
+                                              sep='\t', header=None)
+        missing_textual_indexed = set(missing_textual_indexed[0].tolist())
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        missing_textual_indexed = set()
+
+    # feat prop on visual features
+    for f in os.listdir(f'data/{args.data}/visual_embeddings_indexed'):
+        visual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/visual_embeddings_indexed', f)))
+
+    non_missing_items = list(set(list(range(num_items_visual))).difference(missing_visual_indexed))
+    propagated_visual_features = visual_features.copy()
+
+    for idx in range(args.layers):
+        print(f'[VISUAL] Propagation layer: {idx + 1}')
+        propagated_visual_features = np.matmul(adj, propagated_visual_features)
+        propagated_visual_features[non_missing_items] = visual_features[non_missing_items]
+
+    for miss in missing_visual_indexed:
+        np.save(os.path.join(output_visual, f'{miss}.npy'), propagated_visual_features[miss])
+
+    # feat prop on textual features
+    for f in os.listdir(f'data/{args.data}/textual_embeddings_indexed'):
+        textual_features[int(f.split('.npy')[0]), :] = torch.from_numpy(
+            np.load(os.path.join(f'data/{args.data}/textual_embeddings_indexed', f)))
+
+    non_missing_items = list(set(list(range(num_items_textual))).difference(missing_textual_indexed))
+    propagated_textual_features = textual_features.copy()
+
+    for idx in range(args.layers):
+        print(f'[TEXTUAL] Propagation layer: {idx + 1}')
+        propagated_textual_features = np.matmul(adj, propagated_textual_features)
+        propagated_textual_features[non_missing_items] = textual_features[non_missing_items]
+
+    for miss in missing_textual_indexed:
+        np.save(os.path.join(output_textual, f'{miss}.npy'), propagated_textual_features[miss])
+
+elif args.method == 'heat':
+    visual_folder = f'data/{args.data}/visual_embeddings_indexed'
+    textual_folder = f'data/{args.data}/textual_embeddings_indexed'
+
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
+
+    output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.time}_indexed'
+    output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.layers}_{args.top_k}_{args.time}_indexed'
+
+    try:
+        train = pd.read_csv(f'data/{args.data}/train_indexed.tsv', sep='\t', header=None)
+    except FileNotFoundError:
+        print('Before imputing through feat_prop, split the dataset into train/val/test!')
+        exit()
+
+    num_items_visual = len(missing_visual) + len(os.listdir(visual_folder))
+    num_items_textual = len(missing_textual) + len(os.listdir(textual_folder))
+
+    visual_features = np.zeros((num_items_visual, visual_shape[-1]))
+    textual_features = np.zeros((num_items_textual, textual_shape[-1]))
+
+    adj = get_item_item()
+
+    adj = sp.coo_matrix((adj.storage._value.cpu().numpy(), (adj.storage._row.cpu().numpy(), adj.storage._col.cpu().numpy())), shape=(num_items_visual, num_items_visual))
+
+    num_nodes = num_items_visual
+    A_tilde = adj + np.eye(num_nodes)
+    D_tilde = 1 / np.sqrt(A_tilde.sum(axis=1))
+    D_ = np.zeros((num_items_visual, num_items_visual))
+    np.fill_diagonal(D_, D_tilde[0, 0])
+    H = D_ @ A_tilde @ D_
+    adj = scipy.linalg.expm(-args.time * (np.eye(num_nodes) - H))
     row_idx = np.arange(num_nodes)
     adj[adj.argsort(axis=0)[:num_nodes - args.top_k], row_idx] = 0.
     norm = adj.sum(axis=0)
