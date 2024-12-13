@@ -1,7 +1,10 @@
-# Graph-Missing-Modalities
+# Do We Really Need to Drop Items with Missing Modalities in Multimodal Recommendation? 
 
+![GitHub Repo stars](https://img.shields.io/github/stars/sisinflab/Graph-Missing-Modalities)
+ [![arXiv](https://img.shields.io/badge/arXiv-2408.11767-b31b1b.svg)](https://arxiv.org/abs/2408.11767)
+ 
 This is the official implementation of the paper "_Do We Really Need to Drop Items with Missing Modalities in
-Multimodal Recommendation?_", under review at CIKM 2024 as a short paper.
+Multimodal Recommendation?_", accepted at CIKM 2024 as a short paper.
 
 ## Requirements
 
