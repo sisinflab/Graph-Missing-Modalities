@@ -214,10 +214,12 @@ elif args.method == 'ae':
     visual_normalized = torch.from_numpy(visual_features)
     visual_normalized = visual_normalized - torch.from_numpy(visual_features).min(0, keepdim=True)[0]
     visual_normalized = visual_normalized / (torch.from_numpy(visual_features).max(0, keepdim=True)[0] - torch.from_numpy(visual_features).min(0, keepdim=True)[0])
+    visual_normalized.to(device)
 
     textual_normalized = torch.from_numpy(textual_features)
     textual_normalized = textual_normalized - torch.from_numpy(textual_features).min(0, keepdim=True)[0]
     textual_normalized = textual_normalized / (torch.from_numpy(textual_features).max(0, keepdim=True)[0] - torch.from_numpy(textual_features).min(0, keepdim=True)[0])
+    textual_normalized.to(device)
 
     dataset = TensorDataset(visual_normalized,
                             textual_normalized)
@@ -228,7 +230,7 @@ elif args.method == 'ae':
         for batch in dataloader:
             inputs, targets = batch
             outputs = model_impute_textual(inputs.to(device))
-            loss = criterion(outputs, targets)
+            loss = criterion(outputs.to(device), targets)
             cumulative_loss += loss.item()
             optimizer.zero_grad()
             loss.backward()
@@ -252,7 +254,7 @@ elif args.method == 'ae':
         for batch in dataloader:
             inputs, targets = batch
             outputs = model_impute_visual(inputs.to(device))
-            loss = criterion(outputs, targets)
+            loss = criterion(outputs.to(device), targets)
             loss += (0.0001 * torch.sum(torch.abs(outputs)))
             cumulative_loss += loss.item()
             optimizer.zero_grad()
