@@ -3,11 +3,62 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-from torch_sparse import SparseTensor, mul, sum, fill_diag, matmul, eye, mul_nnz
+from torch_sparse import SparseTensor, mul, sum, fill_diag, matmul
 import scipy.sparse as sp
 import scipy
 
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+import random
+
+random.seed(42)
 np.random.seed(42)
+torch.manual_seed(42)
+torch.cuda.manual_seed(42)
+torch.cuda.manual_seed_all(42)
+torch.backends.cudnn.deterministic = True
+torch.use_deterministic_algorithms(True)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+class AutoEncoderVisual2Textual(nn.Module):
+    def __init__(self):
+        super(AutoEncoderVisual2Textual, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(2048, 1024),
+            nn.LeakyReLU(),
+            nn.Linear(1024, 512),
+            nn.LeakyReLU()
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(512, 512),
+            nn.LeakyReLU(),
+            nn.Linear(512, 768),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return decoded
+
+class AutoEncoderTextual2Visual(nn.Module):
+    def __init__(self):
+        super(AutoEncoderTextual2Visual, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Linear(768, 1024),
+            nn.LeakyReLU(),
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(1024, 2048),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return decoded
 
 
 def get_item_item():
@@ -40,7 +91,7 @@ parser = argparse.ArgumentParser(description="Run imputation.")
 parser.add_argument('--data', type=str, default='Office_Products')
 parser.add_argument('--gpu', type=str, default='0')
 parser.add_argument('--layers', type=int, default=1)
-parser.add_argument('--method', type=str, default='feat_prop')
+parser.add_argument('--method', type=str, default='ae')
 parser.add_argument('--alpha', type=float, default=0.1)
 parser.add_argument('--time', type=float, default=5.0)
 parser.add_argument('--top_k', type=int, default=20)
@@ -135,6 +186,111 @@ elif args.method == 'mean':
         mean_textual = textual_features.mean(axis=0, keepdims=True)
         for miss in missing_textual:
             np.save(os.path.join(output_textual, f'{miss}.npy'), mean_textual)
+
+elif args.method == 'ae':
+    visual_shape = np.load(os.path.join(visual_folder, os.listdir(visual_folder)[0])).shape
+    textual_shape = np.load(os.path.join(textual_folder, os.listdir(textual_folder)[0])).shape
+    num_items_visual = len(os.listdir(visual_folder))
+    num_items_textual = len(os.listdir(textual_folder))
+
+    visual_items = os.listdir(visual_folder)
+    textual_items = os.listdir(textual_folder)
+
+    all_present = [x for x in textual_items if x in visual_items]
+
+    visual_features = np.empty((len(all_present), visual_shape[-1]), dtype=np.float32) if num_items_visual else None
+    textual_features = np.empty((len(all_present), textual_shape[-1]), dtype=np.float32) if num_items_textual else None
+
+    for idx, it in enumerate(all_present):
+        visual_features[idx, :] = np.load(os.path.join(visual_folder, it))
+        textual_features[idx, :] = np.load(os.path.join(textual_folder, it))
+
+    # train AE to reconstruct textual through visual
+    model_impute_textual = AutoEncoderVisual2Textual()
+    model_impute_textual.to(device)
+    criterion = nn.BCELoss()
+    optimizer = optim.Adagrad(model_impute_textual.parameters(), lr=0.01)
+
+    visual_normalized = torch.from_numpy(visual_features)
+    visual_normalized = visual_normalized - torch.from_numpy(visual_features).min(0, keepdim=True)[0]
+    visual_normalized = visual_normalized / (torch.from_numpy(visual_features).max(0, keepdim=True)[0] - torch.from_numpy(visual_features).min(0, keepdim=True)[0])
+
+    textual_normalized = torch.from_numpy(textual_features)
+    textual_normalized = textual_normalized - torch.from_numpy(textual_features).min(0, keepdim=True)[0]
+    textual_normalized = textual_normalized / (torch.from_numpy(textual_features).max(0, keepdim=True)[0] - torch.from_numpy(textual_features).min(0, keepdim=True)[0])
+
+    dataset = TensorDataset(visual_normalized,
+                            textual_normalized)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+    cumulative_loss = 0
+    for epoch in range(1000):
+        for batch in dataloader:
+            inputs, targets = batch
+            outputs = model_impute_textual(inputs.to(device))
+            loss = criterion(outputs, targets)
+            cumulative_loss += loss.item()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        if (epoch + 1) % 100 == 0:
+            print(f"Epoch {epoch + 1}, Loss: {cumulative_loss / 100:.4f}")
+            cumulative_loss = 0
+
+    # train AE to reconstruct visual through textual
+    model_impute_visual = AutoEncoderTextual2Visual()
+    model_impute_visual.to(device)
+    criterion = nn.BCELoss()
+    optimizer = optim.Adagrad(model_impute_visual.parameters(), lr=0.01)
+
+    dataset = TensorDataset(textual_normalized,
+                            visual_normalized)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+    cumulative_loss = 0
+    for epoch in range(1000):
+        for batch in dataloader:
+            inputs, targets = batch
+            outputs = model_impute_visual(inputs.to(device))
+            loss = criterion(outputs, targets)
+            loss += (0.0001 * torch.sum(torch.abs(outputs)))
+            cumulative_loss += loss.item()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        if (epoch + 1) % 100 == 0:
+            print(f"Epoch {epoch + 1}, Loss: {cumulative_loss / 100:.4f}")
+            cumulative_loss = 0
+
+    # impute missing visual from textual
+    for miss in missing_visual:
+        if miss in missing_textual:
+            np.save(os.path.join(output_visual, f'{miss}.npy'), np.zeros(visual_shape, dtype=np.float32))
+        else:
+            textual_input = torch.from_numpy(np.load(os.path.join(textual_folder, f'{miss}.npy')))
+            textual_input = textual_input - torch.from_numpy(textual_features).min(0, keepdim=True)[0]
+            textual_input = textual_input / (torch.from_numpy(textual_features).max(0, keepdim=True)[0] -
+                                             torch.from_numpy(textual_features).min(0, keepdim=True)[0])
+            output = model_impute_visual(textual_input)
+            output = (output * (torch.from_numpy(visual_features).max(0, keepdim=True)[0] -
+                                torch.from_numpy(visual_features).min(0, keepdim=True)[0])) + \
+                     torch.from_numpy(visual_features).min(0, keepdim=True)[0]
+            np.save(os.path.join(output_visual, f'{miss}.npy'), output.detach().numpy())
+
+    # impute missing textual from visual
+    for miss in missing_textual:
+        if miss in missing_visual:
+            np.save(os.path.join(output_textual, f'{miss}.npy'), np.zeros(textual_shape, dtype=np.float32))
+        else:
+            visual_input = torch.from_numpy(np.load(os.path.join(visual_folder, f'{miss}.npy')))
+            visual_input = visual_input - torch.from_numpy(visual_features).min(0, keepdim=True)[0]
+            visual_input = visual_input / (torch.from_numpy(visual_features).max(0, keepdim=True)[0] -
+                                             torch.from_numpy(visual_features).min(0, keepdim=True)[0])
+            output = model_impute_textual(visual_input)
+            output = (output * (torch.from_numpy(textual_features).max(0, keepdim=True)[0] -
+                                torch.from_numpy(textual_features).min(0, keepdim=True)[0])) + \
+                     torch.from_numpy(textual_features).min(0, keepdim=True)[0]
+            np.save(os.path.join(output_textual, f'{miss}.npy'), output.detach().numpy())
 
 elif args.method == 'neigh_mean':
     visual_folder = f'data/{args.data}/visual_embeddings_indexed'
