@@ -230,7 +230,7 @@ elif args.method == 'ae':
         for batch in dataloader:
             inputs, targets = batch
             outputs = model_impute_textual(inputs.to(device))
-            loss = criterion(outputs.to(device), targets)
+            loss = criterion(outputs.to(device), targets.to(device))
             cumulative_loss += loss.item()
             optimizer.zero_grad()
             loss.backward()
@@ -254,7 +254,7 @@ elif args.method == 'ae':
         for batch in dataloader:
             inputs, targets = batch
             outputs = model_impute_visual(inputs.to(device))
-            loss = criterion(outputs.to(device), targets)
+            loss = criterion(outputs.to(device), targets.to(device))
             loss += (0.0001 * torch.sum(torch.abs(outputs)))
             cumulative_loss += loss.item()
             optimizer.zero_grad()
