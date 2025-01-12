@@ -15,7 +15,6 @@ bash = "#!/bin/bash\n"
 for hyp in hyperparams:
     bash += (f"python impute_autoencoder.py "
              f"--data {args.data} "
-             f"--gpu {args.gpu_id} "
              f"--top_k {hyp['--top_k']} "
              f"--method gae\n")
 
