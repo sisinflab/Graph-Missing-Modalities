@@ -20,8 +20,6 @@ torch.cuda.manual_seed_all(42)
 torch.backends.cudnn.deterministic = True
 torch.use_deterministic_algorithms(True)
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 class AutoEncoderVisual2Textual(nn.Module):
     def __init__(self):
         super(AutoEncoderVisual2Textual, self).__init__()

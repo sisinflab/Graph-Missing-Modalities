@@ -13,7 +13,7 @@ hyperparams = ParameterGrid({
 bash = "#!/bin/bash\n"
 
 for hyp in hyperparams:
-    bash += (f"python impute_autoencoder.py "
+    bash += (f"CUBLAS_WORKSPACE_CONFIG=:16:8 python impute_autoencoder.py "
              f"--data {args.data} "
              f"--top_k {hyp['--top_k']} "
              f"--method gae\n")
