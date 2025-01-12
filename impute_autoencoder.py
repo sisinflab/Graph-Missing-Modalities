@@ -403,7 +403,7 @@ elif args.method == 'gae':
             textual_input = textual_input / (torch.from_numpy(textual_features).max(0, keepdim=True)[0] -
                                              torch.from_numpy(textual_features).min(0, keepdim=True)[0])
             features = model_impute_visual.message_passing(
-                torch.concat((textual_normalized, textual_input), dim=0).to(device),
+                torch.concat((textual_normalized.to(device), textual_input.to(device)), dim=0).to(device),
                 adj.to(device)
             )
             output = model_impute_visual.forward(features[-1].to(device))
@@ -437,7 +437,7 @@ elif args.method == 'gae':
                                            torch.from_numpy(visual_features).min(0, keepdim=True)[0])
 
             features = model_impute_textual.message_passing(
-                torch.concat((visual_normalized, visual_input), dim=0).to(device),
+                torch.concat((visual_normalized.to(device), visual_input.to(device)), dim=0).to(device),
                 adj.to(device)
             )
             output = model_impute_textual.forward(features[-1].to(device))
