@@ -274,7 +274,7 @@ elif args.method == 'gae':
     visual_items = os.listdir(visual_folder)
     textual_items = os.listdir(textual_folder)
 
-    all_present = [x for x in textual_items if x in visual_items]
+    all_present = [int(x.split('.npy')[0]) for x in textual_items if x in visual_items]
 
     visual_features = np.empty((len(all_present), visual_shape[-1]), dtype=np.float32) if num_items_visual else None
     textual_features = np.empty((len(all_present), textual_shape[-1]), dtype=np.float32) if num_items_textual else None
@@ -283,8 +283,8 @@ elif args.method == 'gae':
 
     for idx, it in enumerate(all_present):
         inner_map_item[it] = idx
-        visual_features[idx, :] = np.load(os.path.join(visual_folder, it))
-        textual_features[idx, :] = np.load(os.path.join(textual_folder, it))
+        visual_features[idx, :] = np.load(os.path.join(visual_folder, f'{it}.npy'))
+        textual_features[idx, :] = np.load(os.path.join(textual_folder, f'{it}.npy'))
 
     output_visual = f'data/{args.data}/visual_embeddings_{args.method}_{args.top_k}_indexed'
     output_textual = f'data/{args.data}/textual_embeddings_{args.method}_{args.top_k}_indexed'
