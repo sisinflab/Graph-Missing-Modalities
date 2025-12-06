@@ -71,12 +71,12 @@ items_empty_description = set(meta[meta['description'].notna()][meta[meta['descr
 items_empty_url = set(meta[meta['imUrl'].notna()][meta[meta['imUrl'].notna()]['imUrl'].str.len() == 0]['asin'].tolist())
 remaining_items = all_items.difference(items_nan_description).difference(items_nan_url).difference(items_empty_description).difference(items_empty_url)
 
-print('***DATASET STATISTICS:***')
+print('***DATASET STATISTICS***')
 print(f'All items: {len(all_items)}')
 print(f'All users: {reviews["reviewerID"].nunique()}')
 print(f'All interactions: {len(reviews)}\n')
 
-print('***MISSING DATA***:')
+print('***MISSING DATA***')
 print(f'Nan description: {len(items_nan_description)}')
 print(f'Nan url: {len(items_nan_url)}')
 print(f'Empty description: {len(items_empty_description)}')
