@@ -8,7 +8,7 @@ import requests
 import argparse
 
 parser = argparse.ArgumentParser(description="Run dataset preparation.")
-parser.add_argument('--data', type=str, default='Office')
+parser.add_argument('--data', type=str, default='Office_Products')
 args = parser.parse_args()
 
 
@@ -65,14 +65,18 @@ reviews = meta_reviews[['reviewerID', 'asin', 'overall']]
 
 # get unavailable items
 all_items = set(meta['asin'].tolist())
-items_nan_description = set(meta[meta['description'].isna()]['asin'].tolist()).union(set(meta[meta['description'].notna()][meta[meta['description'].notna()]['description'].str.contains('^nan|Nan|NaN|naN|n\/a|N\/A|null|Null$', regex=True)]['asin'].tolist()))
-items_nan_url = set(meta[meta['imUrl'].isna()]['asin'].tolist()).union(set(meta[meta['imUrl'].notna()][meta[meta['imUrl'].notna()]['imUrl'].str.contains('^nan|Nan|NaN|naN|n\/a|N\/A|null|Null$', regex=True)]['asin'].tolist()))
+items_nan_description = set(meta[meta['description'].isna()]['asin'].tolist()).union(set(meta[meta['description'].notna()][meta[meta['description'].notna()]['description'].str.contains(r'^nan|Nan|NaN|naN|n\/a|N\/A|null|Null$', regex=True)]['asin'].tolist()))
+items_nan_url = set(meta[meta['imUrl'].isna()]['asin'].tolist()).union(set(meta[meta['imUrl'].notna()][meta[meta['imUrl'].notna()]['imUrl'].str.contains(r'^nan|Nan|NaN|naN|n\/a|N\/A|null|Null$', regex=True)]['asin'].tolist()))
 items_empty_description = set(meta[meta['description'].notna()][meta[meta['description'].notna()]['description'].str.len() == 0]['asin'].tolist())
 items_empty_url = set(meta[meta['imUrl'].notna()][meta[meta['imUrl'].notna()]['imUrl'].str.len() == 0]['asin'].tolist())
 remaining_items = all_items.difference(items_nan_description).difference(items_nan_url).difference(items_empty_description).difference(items_empty_url)
+
+print('***DATASET STATISTICS:***')
 print(f'All items: {len(all_items)}')
 print(f'All users: {reviews["reviewerID"].nunique()}')
-print(f'All interactions: {len(reviews)}')
+print(f'All interactions: {len(reviews)}\n')
+
+print('***MISSING DATA***:')
 print(f'Nan description: {len(items_nan_description)}')
 print(f'Nan url: {len(items_nan_url)}')
 print(f'Empty description: {len(items_empty_description)}')
@@ -84,6 +88,7 @@ missing_textual = items_nan_description.union(items_empty_description)
 if not os.path.exists(f'{folder}/{name}/images/'):
     os.makedirs(f'{folder}/{name}/images/')
 
+print('Downloading images')
 images = []
 with tqdm(total=len(meta)) as t:
     for index, row in meta.iterrows():
@@ -95,7 +100,9 @@ with tqdm(total=len(meta)) as t:
         t.update()
 
 broken_urls = set([im for im in images if im is None])
-print(f'Broken url: {len(broken_urls)}')
+print(f'Broken url: {len(broken_urls)}\n')
+
+print('***DATASET STATISTICS (AFTER DROPPING MISSING ITEMS)***')
 remaining_items = remaining_items.intersection(set([im for im in images if im]))
 print(f'Remaining items: {len(remaining_items)}')
 
@@ -108,13 +115,13 @@ reviews = reviews[reviews['asin'].isin(remaining_items)]
 
 print(len(meta[meta['description'].isna()]))
 print(len(meta[meta['description'].str.len() == 0]))
-print(len(meta[meta['description'].str.contains('^nan$')]))
-print(len(meta[meta['description'].str.contains('^Nan$')]))
-print(len(meta[meta['description'].str.contains('^NaN$')]))
-print(len(meta[meta['description'].str.contains('^n\/a$')]))
-print(len(meta[meta['description'].str.contains('^N\/A$')]))
-print(len(meta[meta['description'].str.contains('^null$')]))
-print(len(meta[meta['description'].str.contains('^Null$')]))
+print(len(meta[meta['description'].str.contains(r'^nan$')]))
+print(len(meta[meta['description'].str.contains(r'^Nan$')]))
+print(len(meta[meta['description'].str.contains(r'^NaN$')]))
+print(len(meta[meta['description'].str.contains(r'^n\/a$')]))
+print(len(meta[meta['description'].str.contains(r'^N\/A$')]))
+print(len(meta[meta['description'].str.contains(r'^null$')]))
+print(len(meta[meta['description'].str.contains(r'^Null$')]))
 
 print(f'Remaining users: {reviews["reviewerID"].nunique()}')
 print(f'Remaining interactions: {len(reviews)}')
