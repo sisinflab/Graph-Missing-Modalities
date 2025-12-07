@@ -3,6 +3,7 @@ import os
 import shutil
 import argparse
 
+
 parser = argparse.ArgumentParser(description="Run sample main.")
 parser.add_argument('--data', type=str, default='Office_Products')
 parser.add_argument('--model', type=str, default='lightgcnm')
