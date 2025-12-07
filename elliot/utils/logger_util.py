@@ -32,15 +32,23 @@ def _resolve_queue(q):
 
 
 class QueueListenerHandler(QueueHandler):
+    def __init__(self, queue=None, handlers=None, respect_handler_level=False, auto_run=True, **kwargs):
+        import queue as q_module
 
-    def __init__(self, handlers, respect_handler_level=False, auto_run=True, queue=Queue(-1)):
+        # Crea la queue se non ne viene passata una
+        if queue is None:
+            queue = q_module.Queue(maxsize=-1)
+
         queue = _resolve_queue(queue)
+        handlers = _resolve_handlers(handlers) if handlers is not None else []
+
         super().__init__(queue)
-        handlers = _resolve_handlers(handlers)
         self._listener = QueueListener(
             self.queue,
             *handlers,
-            respect_handler_level=respect_handler_level)
+            respect_handler_level=respect_handler_level
+        )
+
         if auto_run:
             self.start()
             atexit.register(self.stop)
