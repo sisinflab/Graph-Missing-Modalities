@@ -27,21 +27,12 @@ def init(path_config, folder_log, log_level=logging.WARNING):
     loader.add_implicit_resolver('!CUSTOM', pattern, None)
 
     def constructor_env_variables(loader, node):
-        """
-        Extracts the environment variable from the node's value
-        :param yaml.Loader loader: the yaml loader
-        :param node: the current node in the yaml
-        :return: the parsed string that contains the value of the environment
-        variable
-        """
         value = loader.construct_scalar(node)
-        match = pattern.findall(value)  # to find all env variables in line
+        match = pattern.findall(value)
         if match:
             full_value = value
             for g in match:
-                full_value = full_value.replace(
-                    f'${{{g}}}', folder_log
-                )
+                full_value = full_value.replace(f'${{{g}}}', folder_log)
             return full_value
         return value
 
@@ -50,15 +41,14 @@ def init(path_config, folder_log, log_level=logging.WARNING):
     with open(path, 'r') as stream:
         try:
             logging_config = yaml.load(stream, Loader=loader)
-        except yaml.YAMLError as exc:
+        except yaml.YAMLError:
             print("Error Loading Logger Config")
             pass
+            
+    import queue
+    logging_config["handlers"]["queue_listener"]["queue"] = queue.Queue(maxsize=10000)
 
-    # Load Logging configs
     cfg.dictConfig(logging_config)
-
-    # Initialize Log Levels
-    log_level = log_level
 
     loggers = {name: logging.getLogger(name) for name in logging.root.manager.loggerDict}
     for _, log in loggers.items():
@@ -94,7 +84,6 @@ def prepare_logger(name, path, log_level=logging.DEBUG):
     fh.setLevel(log_level)
     sh.setLevel(log_level)
     filefmt = "%(time_filter)-15s: %(levelname)-.1s %(message)s"
-    # filedatefmt = "%Y-%m-%d %H:%M:%S"
     formatter = logging.Formatter(filefmt)
     fh.setFormatter(formatter)
     sh.setFormatter(formatter)
