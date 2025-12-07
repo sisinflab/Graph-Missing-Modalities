@@ -7,7 +7,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="Run split.")
 parser.add_argument('--data', type=str, default='Beauty')
-parser.add_argument('--dropped', type=str, default='no')
+parser.add_argument('--final', type=str, default='no')
 args = parser.parse_args()
 
 if args.final == 'yes':
