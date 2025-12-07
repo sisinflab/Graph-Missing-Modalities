@@ -2,7 +2,7 @@ version: 1
 objects:
   queue:
     class: queue.Queue
-    maxsize: 10000
+    # maxsize: 10000
 formatters:
   simple:
     format: '%(time_filter)-15s: %(levelname)-.1s %(message)s'
